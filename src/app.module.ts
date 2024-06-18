@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceConfig } from './config/data.source';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { DataSourceConfig } from './config/data.source';
     }),
     TypeOrmModule.forRoot({ ...DataSourceConfig }),
     UsersModule,
+    ProjectsModule,
   ],
 })
 export class AppModule {}
