@@ -2,14 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersEntity } from '../entities/user.entity';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
-import { UserDTO, UserUpdateDTO } from '../dto/user.dto';
+import { UserDTO, UserToProjectoDTO, UserUpdateDTO } from '../dto/user.dto';
 import { ErrorManager } from 'src/utils/ErrorManager.util';
+import { UsersProjectsEntity } from '../entities/usersProjects.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntity)
     private readonly userRepository: Repository<UsersEntity>,
+    @InjectRepository(UsersProjectsEntity)
+    private readonly userToProjectRepository: Repository<UsersProjectsEntity>,
   ) {}
 
   public async create(body: UserDTO): Promise<UsersEntity> {
@@ -83,6 +86,16 @@ export class UsersService {
         });
       }
       return user;
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  public async addRelation(
+    body: UserToProjectoDTO,
+  ): Promise<UserToProjectoDTO> {
+    try {
+      return await this.userToProjectRepository.save(body);
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
