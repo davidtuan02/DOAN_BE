@@ -30,8 +30,10 @@ export class ProjectsService {
   public async findById(id: string): Promise<ProjectsEntity> {
     try {
       return await this.projectRepository
-        .createQueryBuilder('user')
+        .createQueryBuilder('project')
         .where({ id })
+        .leftJoinAndSelect('project.usersIncludes', 'usersIncludes')
+        .leftJoinAndSelect('usersIncludes.user', 'user')
         .getOne();
     } catch (error) {
       throw new Error(error);
