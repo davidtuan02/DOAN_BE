@@ -104,4 +104,23 @@ export class UsersService {
       throw ErrorManager.createSignatureMessage(error.message);
     }
   }
+
+  public async findBy({
+    key,
+    value,
+  }: {
+    key: keyof UserDTO;
+    value: any;
+  }): Promise<UsersEntity> {
+    try {
+      const user: UsersEntity = await this.userRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .where({ [key]: value })
+        .getOne();
+      return user;
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
 }
