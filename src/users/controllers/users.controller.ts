@@ -11,9 +11,11 @@ import {
 import { UsersService } from '../services/users.service';
 import { UserDTO, UserToProjectoDTO, UserUpdateDTO } from '../dto/user.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RoleDecorator } from 'src/auth/decorators/roles.decorator';
+import { RoleGuard } from 'src/auth/guards/role.guard';
 
 @Controller('users')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RoleGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -33,16 +35,19 @@ export class UsersController {
   }
 
   @Put('edit/:id')
+  @RoleDecorator('ADMIN')
   public async update(@Body() body: UserUpdateDTO, @Param('id') id: string) {
     return await this.usersService.update(body, id);
   }
 
   @Delete('delete/:id')
+  @RoleDecorator('ADMIN')
   public async delete(@Param('id') id: string) {
     return await this.usersService.delete(id);
   }
 
   @Post('add-to-project')
+  @RoleDecorator('ADMIN')
   public async addRelation(@Body() body: UserToProjectoDTO) {
     return await this.usersService.addRelation(body);
   }

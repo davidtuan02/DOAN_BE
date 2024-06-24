@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { PUBLIC_KEY } from 'src/constants/keyDecorator';
+import { PUBLIC_KEY } from 'src/constants/key-decorator';
 import { UsersService } from 'src/users/services/users.service';
 import { UseToken } from 'src/utils/UseToken.util';
 import { IExpiration } from '../interfaces/token.interface';
