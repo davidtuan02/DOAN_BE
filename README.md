@@ -40,7 +40,7 @@ $ docker-compose down
 
 ## Migrations
 
-ACLARACION: Tener en cuenta que el path configurado es a partir del directorio src, asique los imports de los archivos tienen que ser relativos. Es decir, en vez de hacer esto "src/" hay que hacer "../"
+ACLARACION: Tener en cuenta que el path configurado es a partir del directorio root del proyecto, por eso los import son relativos. Es decir, en vez de hacer esto "src/" hay que hacer "../"
 
 ```bash
 # generar migracion
