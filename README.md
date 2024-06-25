@@ -21,16 +21,16 @@ $ npm install
 
 ## Running the app
 
-ACLARACION: swagger disponible en el navegador. ruta "/docs". Alcance documentación: controllers y DTOs.
+ACLARACION: swagger disponible en el navegador en la ruta "/docs". Alcance documentación: controllers y DTOs.
 
 ```bash
 # watch mode
 $ npm run start:dev
 ```
 
-## Docker container
+## Docker 
 
-ACLARACION: utiliza la imagen Postgres:15.1 en el puerto 5432. Dejo el dockerfile en el repositorio
+ACLARACION: utiliza la imagen Postgres:15.1 en el puerto 5432. Disponibilizo el dockerfile en el repositorio
 
 ```bash
 # levantar contenedor
