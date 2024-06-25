@@ -9,7 +9,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiParam, ApiTags } from '@nestjs/swagger';
 import { PublicAccess } from '../../auth/decorators/public.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { AccessLevelGuard } from '../../auth/guards/access-level.guard';
@@ -28,6 +28,9 @@ export class ProjectsController {
   @ApiParam({
     name: 'userId',
   })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
   @Roles('CREATOR')
   @Post('create/userOwner/:userId')
   public async createProject(
@@ -37,6 +40,9 @@ export class ProjectsController {
     return await this.projectService.createProject(body, userId);
   }
 
+  @ApiHeader({
+    name: 'tasks_token',
+  })
   @Get('all')
   public async findAllProjects() {
     return await this.projectService.findProjects();
@@ -44,6 +50,9 @@ export class ProjectsController {
 
   @ApiParam({
     name: 'projectId',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
   })
   @Get(':projectId')
   public async findProjectById(
@@ -61,6 +70,9 @@ export class ProjectsController {
   @ApiParam({
     name: 'projectId',
   })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
   @AccessLevel('OWNER')
   @Put('edit/:projectId')
   public async updateProject(
@@ -72,6 +84,9 @@ export class ProjectsController {
 
   @ApiParam({
     name: 'projectId',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
   })
   @AccessLevel('OWNER')
   @Delete('delete/:projectId')

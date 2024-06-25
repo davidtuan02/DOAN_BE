@@ -33,6 +33,9 @@ export class UsersController {
   }
 
   @AdminAccess()
+  @ApiHeader({
+    name: 'tasks_token',
+  })
   @Get('all')
   public async findAllUsers() {
     return await this.usersService.findUsers();
@@ -44,10 +47,6 @@ export class UsersController {
   @ApiHeader({
     name: 'tasks_token',
   })
-  @ApiResponse({
-    status: 400,
-    description: 'No se encontro resultado',
-  })
   @Get(':id')
   public async findUserById(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.usersService.findUserById(id);
@@ -55,6 +54,9 @@ export class UsersController {
 
   @ApiParam({
     name: 'projectId',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
   })
   @AccessLevel('OWNER')
   @Post('add-to-project/:projectId')
@@ -71,6 +73,9 @@ export class UsersController {
   @ApiParam({
     name: 'id',
   })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
   @Put('edit/:id')
   public async updateUser(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -81,6 +86,9 @@ export class UsersController {
 
   @ApiParam({
     name: 'id',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
   })
   @Delete('delete/:id')
   public async deleteUser(@Param('id', new ParseUUIDPipe()) id: string) {
