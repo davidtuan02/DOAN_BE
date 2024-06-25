@@ -1,11 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { ILogin } from '../interfaces/login.interface';
+import { AuthBody } from '../interfaces/auth.interface';
 
-export class AuthDTO implements ILogin {
+export class AuthDTO implements AuthBody {
+  @ApiProperty()
   @IsNotEmpty()
   username: string;
 
-  @IsString()
+  @ApiProperty()
   @IsNotEmpty()
+  @IsString()
   password: string;
 }

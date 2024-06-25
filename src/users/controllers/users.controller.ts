@@ -4,51 +4,86 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { ApiHeader, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AccessLevel } from '../../auth/decorators/access-level.decorator';
+import { AdminAccess } from '../../auth/decorators/admin.decorator';
+import { PublicAccess } from '../../auth/decorators/public.decorator';
+import { AccessLevelGuard } from '../../auth/guards/access-level.guard';
+import { AuthGuard } from '../../auth/guards/auth.guard';
+import { RolesGuard } from '../../auth/guards/role.guard';
+import { ProjectsEntity } from '../../projects/entities/projects.entity';
+import { UserDTO, UserToProjectDTO, UserUpdateDTO } from '../dto/user.dto';
 import { UsersService } from '../services/users.service';
-import { UserDTO, UserToProjectoDTO, UserUpdateDTO } from '../dto/user.dto';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { RoleDecorator } from 'src/auth/decorators/roles.decorator';
-import { RoleGuard } from 'src/auth/guards/role.guard';
 
+@ApiTags('Users')
 @Controller('users')
-@UseGuards(AuthGuard, RoleGuard)
+@UseGuards(AuthGuard, RolesGuard, AccessLevelGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('register')
-  public async register(@Body() body: UserDTO): Promise<UserDTO> {
-    return await this.usersService.create(body);
+  @PublicAccess()
+  @Post('create')
+  public async registerUser(@Body() body: UserDTO) {
+    return await this.usersService.createUser(body);
   }
 
+  @AdminAccess()
   @Get('all')
-  public async getAll(): Promise<UserDTO[]> {
-    return await this.usersService.findAll();
+  public async findAllUsers() {
+    return await this.usersService.findUsers();
   }
 
+  @ApiParam({
+    name: 'id',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'No se encontro resultado',
+  })
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<UserDTO> {
-    return await this.usersService.findById(id);
+  public async findUserById(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.usersService.findUserById(id);
   }
 
+  @ApiParam({
+    name: 'projectId',
+  })
+  @AccessLevel('OWNER')
+  @Post('add-to-project/:projectId')
+  public async addToProject(
+    @Body() body: UserToProjectDTO,
+    @Param('projectId', new ParseUUIDPipe()) id: string,
+  ) {
+    return await this.usersService.relationToProject({
+      ...body,
+      project: id as unknown as ProjectsEntity,
+    });
+  }
+
+  @ApiParam({
+    name: 'id',
+  })
   @Put('edit/:id')
-  @RoleDecorator('ADMIN')
-  public async update(@Body() body: UserUpdateDTO, @Param('id') id: string) {
-    return await this.usersService.update(body, id);
+  public async updateUser(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: UserUpdateDTO,
+  ) {
+    return await this.usersService.updateUser(body, id);
   }
 
+  @ApiParam({
+    name: 'id',
+  })
   @Delete('delete/:id')
-  @RoleDecorator('ADMIN')
-  public async delete(@Param('id') id: string) {
-    return await this.usersService.delete(id);
-  }
-
-  @Post('add-to-project')
-  @RoleDecorator('ADMIN')
-  public async addRelation(@Body() body: UserToProjectoDTO) {
-    return await this.usersService.addRelation(body);
+  public async deleteUser(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.usersService.deleteUser(id);
   }
 }

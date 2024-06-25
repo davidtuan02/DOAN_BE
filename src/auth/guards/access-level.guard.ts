@@ -6,14 +6,15 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { ACCESS_LEVEL } from '../../constants/access-level-enum';
 import {
   ACCESS_LEVEL_KEY,
   ADMIN_KEY,
   PUBLIC_KEY,
   ROLES_KEY,
-} from 'src/constants/key-decorator';
-import { ACCESS_LEVEL, ROLES } from 'src/constants/roles';
-import { UsersService } from 'src/users/services/users.service';
+} from '../../constants/key-decorator';
+import { ROLES } from '../../constants/roles-enum';
+import { UsersService } from '../../users/services/users.service';
 
 @Injectable()
 export class AccessLevelGuard implements CanActivate {
@@ -61,11 +62,11 @@ export class AccessLevelGuard implements CanActivate {
       }
     }
 
-    if (roleUser === ROLES.ADMIN) {
+    if (roleUser === ROLES.ADMIN || roleUser === ROLES.CREATOR) {
       return true;
     }
 
-    const user = await this.userService.findById(idUser);
+    const user = await this.userService.findUserById(idUser);
 
     const userExistInProject = user.projectsIncludes.find(
       (project) => project.project.id === req.params.projectId,
@@ -75,7 +76,12 @@ export class AccessLevelGuard implements CanActivate {
       throw new UnauthorizedException('No formas parte del proyecto');
     }
 
-    if (ACCESS_LEVEL[accessLevel] !== userExistInProject.accessLevel) {
+    // DEVELOPER = 30,
+    // MANTEINER = 40,
+    // OWNER = 50,
+
+    //30 > 40
+    if (ACCESS_LEVEL[accessLevel] > userExistInProject.accessLevel) {
       throw new UnauthorizedException('No tienes el nivel de acceso necesario');
     }
 

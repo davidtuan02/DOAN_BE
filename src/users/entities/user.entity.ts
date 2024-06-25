@@ -1,9 +1,9 @@
 import { Column, Entity, OneToMany } from 'typeorm';
-import { BaseEntity } from '../../config/base.entity';
-import { ROLES } from '../../constants/roles';
-import { IUser } from '../../interface/user.interface';
-import { UsersProjectsEntity } from './usersProjects.entity';
 import { Exclude } from 'class-transformer';
+import { ROLES } from '../../constants/roles-enum';
+import { IUser } from '../../interfaces/user.interface';
+import { BaseEntity } from '../../config/base.entity';
+import { UsersProjectsEntity } from './usersProjects.entity';
 
 @Entity({ name: 'users' })
 export class UsersEntity extends BaseEntity implements IUser {
@@ -22,8 +22,8 @@ export class UsersEntity extends BaseEntity implements IUser {
   @Column({ unique: true })
   username: string;
 
-  @Column()
   @Exclude()
+  @Column()
   password: string;
 
   @Column({ type: 'enum', enum: ROLES })

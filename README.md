@@ -71,3 +71,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+## Troubleshooting
+MIGRACIONES:
+  Tener en cuenta que el path configurado es a partir del directorio src, asique los imports de los archivos tienen que ser relativos
+  Es decir, en vez de hacer esto "src/" hay que hacer "../"
+  

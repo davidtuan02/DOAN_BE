@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { ADMIN_KEY } from 'src/constants/key-decorator';
-import { ROLES } from 'src/constants/roles';
+import { ADMIN_KEY } from '../../constants/key-decorator';
+import { ROLES } from '../../constants/roles-enum';
 
-export const AdminDecorator = () => SetMetadata(ADMIN_KEY, ROLES.ADMIN);
+export const AdminAccess = () => SetMetadata(ADMIN_KEY, ROLES.ADMIN);

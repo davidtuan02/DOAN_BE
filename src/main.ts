@@ -1,13 +1,18 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
 import * as morgan from 'morgan';
 import { CORS } from './constants';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    snapshot: true,
+  });
+
   app.use(morgan('dev'));
+
   app.useGlobalPipes(
     new ValidationPipe({
       transformOptions: {
@@ -15,13 +20,26 @@ async function bootstrap() {
       },
     }),
   );
+
   const reflector = app.get(Reflector);
+
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
-  app.setGlobalPrefix('api');
-  app.enableCors(CORS);
+
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT');
-  await app.listen(port || 8001);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+
+  app.enableCors(CORS);
+  app.setGlobalPrefix('api');
+  const config = new DocumentBuilder()
+    .setTitle('Taskrr API')
+    .setDescription('Aplicacion de gestion de tareas')
+    .setVersion('1.0')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
+  await app.listen(configService.get('PORT'));
+
+  console.log(`Application running on: ${await app.getUrl()}`);
 }
 bootstrap();

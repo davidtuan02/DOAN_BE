@@ -1,9 +1,9 @@
 import * as jwt from 'jsonwebtoken';
-import { IExpiration, IToken } from 'src/auth/interfaces/token.interface';
+import { AuthTokenResult, IUseToken } from '../auth/interfaces/auth.interface';
 
-export const UseToken = (token: string): IExpiration | string => {
+export const UseToken = (token: string): IUseToken | string => {
   try {
-    const decode = jwt.decode(token) as unknown as IToken;
+    const decode = jwt.decode(token) as AuthTokenResult;
     const currentDate = new Date();
     const expirationDate = new Date(decode.exp);
 

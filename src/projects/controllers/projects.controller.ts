@@ -4,49 +4,79 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { PublicAccess } from '../../auth/decorators/public.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { AccessLevelGuard } from '../../auth/guards/access-level.guard';
+import { AuthGuard } from '../../auth/guards/auth.guard';
 import { ProjectsService } from '../services/projects.service';
+import { RolesGuard } from '../../auth/guards/role.guard';
 import { ProjectDTO, ProjectUpdateDTO } from '../dto/project.dto';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { RoleGuard } from 'src/auth/guards/role.guard';
-import { AccessLevelGuard } from 'src/auth/guards/access-level.guard';
-import { AccessLevelDecorator } from 'src/auth/decorators/accessLevel.decorator';
-
+import { AccessLevel } from '../../auth/decorators/access-level.decorator';
+@ApiTags('Projects')
 @Controller('projects')
-@UseGuards(AuthGuard, RoleGuard, AccessLevelGuard)
+@UseGuards(AuthGuard, RolesGuard, AccessLevelGuard)
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(private readonly projectService: ProjectsService) {}
 
-  @Post('register')
-  public async register(@Body() body: ProjectDTO): Promise<ProjectDTO> {
-    return await this.projectsService.create(body);
+  @ApiParam({
+    name: 'userId',
+  })
+  @Roles('CREATOR')
+  @Post('create/userOwner/:userId')
+  public async createProject(
+    @Body() body: ProjectDTO,
+    @Param('userId') userId: string,
+  ) {
+    return await this.projectService.createProject(body, userId);
   }
 
   @Get('all')
-  public async getAll(): Promise<ProjectDTO[]> {
-    return await this.projectsService.findAll();
+  public async findAllProjects() {
+    return await this.projectService.findProjects();
   }
 
+  @ApiParam({
+    name: 'projectId',
+  })
   @Get(':projectId')
-  public async getById(@Param('projectId') id: string): Promise<ProjectDTO> {
-    return await this.projectsService.findById(id);
-  }
-
-  @AccessLevelDecorator(50)
-  @Put('edit/:projectId')
-  public async update(
-    @Body() body: ProjectUpdateDTO,
-    @Param('projectId') id: string,
+  public async findProjectById(
+    @Param('projectId', new ParseUUIDPipe()) id: string,
   ) {
-    return await this.projectsService.update(body, id);
+    return await this.projectService.findProjectById(id);
   }
 
-  @AccessLevelDecorator(50)
+  @PublicAccess()
+  @Get('list/api')
+  public async listApi() {
+    return this.projectService.listApi();
+  }
+
+  @ApiParam({
+    name: 'projectId',
+  })
+  @AccessLevel('OWNER')
+  @Put('edit/:projectId')
+  public async updateProject(
+    @Param('projectId', new ParseUUIDPipe()) id: string,
+    @Body() body: ProjectUpdateDTO,
+  ) {
+    return await this.projectService.updateProject(body, id);
+  }
+
+  @ApiParam({
+    name: 'projectId',
+  })
+  @AccessLevel('OWNER')
   @Delete('delete/:projectId')
-  public async delete(@Param('projectId') id: string) {
-    return await this.projectsService.delete(id);
+  public async deleteProject(
+    @Param('projectId', new ParseUUIDPipe()) id: string,
+  ) {
+    return await this.projectService.deleteProject(id);
   }
 }
