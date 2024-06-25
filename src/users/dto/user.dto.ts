@@ -54,26 +54,32 @@ export class UserUpdateDTO {
   @IsOptional()
   @IsString()
   firstName: string;
+
   @ApiProperty()
   @IsOptional()
   @IsString()
   lastName: string;
+
   @ApiProperty()
   @IsOptional()
   @IsNumber()
   age: number;
+
   @ApiProperty()
   @IsOptional()
   @IsString()
   email: string;
+
   @ApiProperty()
   @IsOptional()
   @IsString()
   username: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsString()
   password: string;
+
   @ApiProperty()
   @IsOptional()
   @IsEnum(ROLES)
@@ -85,10 +91,12 @@ export class UserToProjectDTO {
   @IsNotEmpty()
   @IsUUID()
   user: UsersEntity;
+
   @ApiProperty()
   @IsOptional()
   @IsUUID()
   project: ProjectsEntity;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsEnum(ACCESS_LEVEL)

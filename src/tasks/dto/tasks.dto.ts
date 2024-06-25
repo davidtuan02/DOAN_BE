@@ -8,18 +8,22 @@ export class TasksDTO {
   @IsNotEmpty()
   @IsString()
   taskName: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
   taskDescription: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsEnum(STATUS_TASK)
   status: STATUS_TASK;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
   responsableName: string;
+
   @ApiProperty()
   @IsOptional()
   project?: ProjectDTO;

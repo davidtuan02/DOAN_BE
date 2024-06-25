@@ -30,7 +30,7 @@ async function bootstrap() {
   app.enableCors(CORS);
   app.setGlobalPrefix('api');
   const config = new DocumentBuilder()
-    .setTitle('Taskrr API')
+    .setTitle('Tasks API')
     .setDescription('Aplicacion de gestion de tareas')
     .setVersion('1.0')
     .build();
