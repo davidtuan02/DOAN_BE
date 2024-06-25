@@ -21,6 +21,8 @@ $ npm install
 
 ## Running the app
 
+ACLARACION: swagger disponible en el navegador. ruta "/docs". Alcance documentación: controllers y DTOs.
+
 ```bash
 # watch mode
 $ npm run start:dev
