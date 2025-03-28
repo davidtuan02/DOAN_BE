@@ -10,6 +10,7 @@ import { PUBLIC_KEY } from '../../constants/key-decorator';
 import { UsersService } from '../../users/services/users.service';
 import { UseToken } from '../../utils/use-token.util';
 import { IUseToken } from '../interfaces/auth.interface';
+import { IRequestWithUser } from '../../interfaces/request-with-user.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -27,31 +28,51 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest<Request>();
+    const req = context
+      .switchToHttp()
+      .getRequest<Request & { idUser: string; roleUser: string; user: any }>();
+
+    // Log request path - helps with debugging
+    const path = req.url;
+    console.log(`[AuthGuard] Authenticating request to ${path}`);
 
     const token = req.headers['tasks_token'];
+    console.log(`[AuthGuard] Token exists: ${!!token}`);
+
     if (!token || Array.isArray(token)) {
+      console.log('[AuthGuard] Invalid token format');
       throw new UnauthorizedException('Invalid token');
     }
 
     const manageToken: IUseToken | string = UseToken(token);
 
     if (typeof manageToken === 'string') {
+      console.log(`[AuthGuard] Token error: ${manageToken}`);
       throw new UnauthorizedException(manageToken);
     }
 
     if (manageToken.isExpired) {
+      console.log('[AuthGuard] Token expired');
       throw new UnauthorizedException('Token expired');
     }
 
     const { sub } = manageToken;
+    console.log(`[AuthGuard] Token sub (user ID): ${sub}`);
+
     const user = await this.userService.findUserById(sub);
     if (!user) {
+      console.log(`[AuthGuard] User with ID ${sub} not found`);
       throw new UnauthorizedException('Invalid user');
     }
 
+    console.log(`[AuthGuard] User authenticated: ${user.id}`);
     req.idUser = user.id;
     req.roleUser = user.role;
+    req.user = {
+      id: user.id, // Add explicit id field for full clarity
+      sub: user.id,
+      role: user.role,
+    };
     return true;
   }
 }

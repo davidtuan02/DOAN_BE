@@ -7,6 +7,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
+import { TeamsModule } from './teams/teams.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
     ProjectsModule,
     AuthModule,
     TasksModule,
+    TeamsModule,
   ],
 })
 export class AppModule {}

@@ -53,37 +53,46 @@ export class UserUpdateDTO {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  firstName: string;
+  firstName?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  lastName: string;
+  lastName?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsNumber()
-  age: number;
+  age?: number;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  email: string;
+  email?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  username: string;
+  username?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  password: string;
+  password?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsEnum(ROLES)
-  role: ROLES;
+  role?: ROLES;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  resetToken?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  resetTokenExpiry?: Date;
 }
 
 export class UserToProjectDTO {

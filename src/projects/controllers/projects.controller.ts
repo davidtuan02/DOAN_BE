@@ -95,4 +95,48 @@ export class ProjectsController {
   ) {
     return await this.projectService.deleteProject(id);
   }
+
+  @ApiParam({
+    name: 'projectId',
+  })
+  @ApiParam({
+    name: 'teamId',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @AccessLevel('OWNER')
+  @Post(':projectId/assign-to-team/:teamId')
+  public async assignProjectToTeam(
+    @Param('projectId', new ParseUUIDPipe()) projectId: string,
+    @Param('teamId', new ParseUUIDPipe()) teamId: string,
+  ) {
+    return await this.projectService.assignProjectToTeam(projectId, teamId);
+  }
+
+  @ApiParam({
+    name: 'userId',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @Get('user/:userId')
+  public async findProjectsByUserId(
+    @Param('userId', new ParseUUIDPipe()) userId: string,
+  ) {
+    return await this.projectService.findProjectsByUserId(userId);
+  }
+
+  @ApiParam({
+    name: 'projectId',
+  })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @Post(':projectId/create-default-board')
+  public async createDefaultBoard(
+    @Param('projectId', new ParseUUIDPipe()) projectId: string,
+  ) {
+    return await this.projectService.createDefaultBoardForProject(projectId);
+  }
 }
