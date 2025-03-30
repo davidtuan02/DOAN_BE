@@ -21,10 +21,13 @@ import {
   UpdateTaskDTO,
 } from '../dto/tasks.dto';
 import { TasksService } from '../services/tasks.service';
+import { TeamRoleGuard } from '../../auth/guards/team-role.guard';
+import { TeamRole } from '../../auth/decorators/team-role.decorator';
+import { TEAM_ROLE } from '../../constants/team-role.enum';
 
 @ApiTags('Tasks')
 @Controller('tasks')
-@UseGuards(AuthGuard, RolesGuard, AccessLevelGuard)
+@UseGuards(AuthGuard, RolesGuard)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
@@ -34,7 +37,8 @@ export class TasksController {
   @ApiHeader({
     name: 'tasks_token',
   })
-  @AccessLevel('DEVELOPER')
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   @Post('create/:projectId')
   public async createTask(
     @Body() body: TasksDTO,
@@ -46,7 +50,6 @@ export class TasksController {
   @ApiHeader({
     name: 'tasks_token',
   })
-  @AccessLevel('DEVELOPER')
   @Get()
   public async findAllTasks() {
     return this.tasksService.findAllTasks();
@@ -58,7 +61,6 @@ export class TasksController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('DEVELOPER')
   @Get(':id')
   public async findTaskById(@Param('id') id: string) {
     return this.tasksService.findTaskById(id);
@@ -70,7 +72,6 @@ export class TasksController {
   @ApiParam({
     name: 'projectId',
   })
-  @AccessLevel('DEVELOPER')
   @Get('project/:projectId')
   public async findTasksByProject(@Param('projectId') projectId: string) {
     return this.tasksService.findTasksByProject(projectId);
@@ -82,7 +83,8 @@ export class TasksController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('DEVELOPER')
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   @Put(':id')
   public async updateTask(
     @Param('id') id: string,
@@ -97,7 +99,8 @@ export class TasksController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('MANTEINER')
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.LEADER)
   @Delete(':id')
   public async deleteTask(@Param('id') id: string) {
     return this.tasksService.deleteTask(id);
@@ -109,7 +112,8 @@ export class TasksController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('DEVELOPER')
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   @Put(':id/assign')
   public async assignTaskToUser(
     @Param('id') id: string,
@@ -124,7 +128,8 @@ export class TasksController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('DEVELOPER')
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   @Put(':id/move')
   public async moveTaskToColumn(
     @Param('id') id: string,
@@ -139,7 +144,8 @@ export class TasksController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('DEVELOPER')
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.LEADER)
   @Put(':id/sprint')
   public async addTaskToSprint(
     @Param('id') id: string,

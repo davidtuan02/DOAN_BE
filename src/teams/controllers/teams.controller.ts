@@ -28,6 +28,9 @@ import { UserActiveGuard } from '../../auth/guards/user-active.guard';
 import { RequestWithUser } from '../../interfaces/request-with-user.interface';
 import { TeamMemberGuard } from '../guards/team-member.guard';
 import { TeamLeaderGuard } from '../guards/team-leader.guard';
+import { TeamRoleGuard } from '../../auth/guards/team-role.guard';
+import { TeamRole } from '../../auth/decorators/team-role.decorator';
+import { TEAM_ROLE } from '../../constants/team-role.enum';
 
 @ApiTags('Teams')
 @Controller('teams')
@@ -36,6 +39,7 @@ export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
   @Post()
+  @Roles(ROLES.ADMIN)
   async createTeam(@Body() body: CreateTeamDto, @Req() req: RequestWithUser) {
     try {
       if (!req.user || !req.user.id) {
@@ -72,13 +76,15 @@ export class TeamsController {
   }
 
   @Get(':id')
-  @UseGuards(TeamMemberGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   getTeamById(@Param('id') id: string) {
     return this.teamsService.getTeamById(id);
   }
 
   @Put(':id')
-  @UseGuards(TeamLeaderGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.LEADER)
   updateTeam(@Param('id') id: string, @Body() body: UpdateTeamDto) {
     return this.teamsService.updateTeam(id, body);
   }
@@ -90,7 +96,8 @@ export class TeamsController {
   }
 
   @Post(':id/members')
-  @UseGuards(TeamLeaderGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.LEADER)
   addMemberToTeam(
     @Param('id') teamId: string,
     @Body() body: AddMemberToTeamDto,
@@ -99,7 +106,8 @@ export class TeamsController {
   }
 
   @Put(':id/members/:userId/role')
-  @UseGuards(TeamLeaderGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.ADMIN)
   updateMemberRole(
     @Param('id') teamId: string,
     @Param('userId') userId: string,
@@ -109,7 +117,8 @@ export class TeamsController {
   }
 
   @Delete(':id/members/:userId')
-  @UseGuards(TeamLeaderGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.LEADER)
   removeMemberFromTeam(
     @Param('id') teamId: string,
     @Param('userId') userId: string,
@@ -118,7 +127,8 @@ export class TeamsController {
   }
 
   @Get(':id/members')
-  @UseGuards(TeamMemberGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   getTeamMembers(@Param('id') teamId: string) {
     return this.teamsService.getTeamMembers(teamId);
   }
@@ -141,13 +151,15 @@ export class TeamsController {
   }
 
   @Get(':id/available-users')
-  @UseGuards(TeamLeaderGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.LEADER)
   async getAvailableUsers(@Param('id') teamId: string) {
     return await this.teamsService.getAvailableUsersForTeam(teamId);
   }
 
   @Get(':id/projects')
-  @UseGuards(TeamMemberGuard)
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   getTeamProjects(@Param('id') teamId: string) {
     return this.teamsService.getTeamProjects(teamId);
   }

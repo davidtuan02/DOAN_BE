@@ -44,9 +44,9 @@ export class UserDTO {
   password: string;
 
   @ApiProperty()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(ROLES)
-  role: ROLES;
+  role?: ROLES;
 }
 
 export class UserUpdateDTO {

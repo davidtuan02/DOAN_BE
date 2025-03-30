@@ -27,7 +27,7 @@ export class UsersEntity extends BaseEntity implements IUser {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: ROLES })
+  @Column({ type: 'enum', enum: ROLES, default: ROLES.BASIC })
   role: ROLES;
 
   @Column({ nullable: true })

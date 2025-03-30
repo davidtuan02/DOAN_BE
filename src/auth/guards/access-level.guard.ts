@@ -56,13 +56,14 @@ export class AccessLevelGuard implements CanActivate {
           return true;
         } else {
           throw new UnauthorizedException(
-            'No tienes permisos para esta operacion',
+            'You do not have permissions for this operation',
           );
         }
       }
     }
 
-    if (roleUser === ROLES.ADMIN || roleUser === ROLES.CREATOR) {
+    // ADMIN users have full access to everything
+    if (roleUser === ROLES.ADMIN) {
       return true;
     }
 
@@ -73,16 +74,14 @@ export class AccessLevelGuard implements CanActivate {
     );
 
     if (userExistInProject === undefined) {
-      throw new UnauthorizedException('No formas parte del proyecto');
+      throw new UnauthorizedException('You are not part of this project');
     }
 
-    // DEVELOPER = 30,
-    // MANTEINER = 40,
-    // OWNER = 50,
-
-    //30 > 40
+    // Check access level
     if (ACCESS_LEVEL[accessLevel] > userExistInProject.accessLevel) {
-      throw new UnauthorizedException('No tienes el nivel de acceso necesario');
+      throw new UnauthorizedException(
+        'You do not have the required access level',
+      );
     }
 
     return true;

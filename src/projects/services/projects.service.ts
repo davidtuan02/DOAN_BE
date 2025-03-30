@@ -36,7 +36,7 @@ export class ProjectsService {
       // Save the project
       const project = await this.projectRepository.save(projectData);
 
-      // Create the user-project relationship
+      // Create the user-project relationship for the creator
       await this.userProjectRepository.save({
         accessLevel: ACCESS_LEVEL.OWNER,
         user: user,
@@ -48,6 +48,7 @@ export class ProjectsService {
         // Verify the team exists
         const team = await this.teamRepository.findOne({
           where: { id: teamId },
+          relations: ['usersIncludes', 'usersIncludes.user'],
         });
 
         if (!team) {
@@ -60,6 +61,38 @@ export class ProjectsService {
         // Update the project with the team
         project.team = team;
         await this.projectRepository.save(project);
+
+        // Add all team members to the project
+        if (team.usersIncludes && team.usersIncludes.length > 0) {
+          for (const userTeam of team.usersIncludes) {
+            // Skip if this is the creator (already added above)
+            if (userTeam.user.id === userId) {
+              continue;
+            }
+
+            // Determine access level based on team role
+            let accessLevel = ACCESS_LEVEL.DEVELOPER; // Default for MEMBER
+
+            switch (userTeam.role) {
+              case 'admin':
+                accessLevel = ACCESS_LEVEL.OWNER;
+                break;
+              case 'leader':
+                accessLevel = ACCESS_LEVEL.MANTEINER;
+                break;
+              case 'member':
+                accessLevel = ACCESS_LEVEL.DEVELOPER;
+                break;
+            }
+
+            // Add the team member to the project
+            await this.userProjectRepository.save({
+              accessLevel,
+              user: userTeam.user,
+              project,
+            });
+          }
+        }
       }
 
       // Return the created project with user relationship

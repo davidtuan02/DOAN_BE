@@ -40,6 +40,11 @@ export class RolesGuard implements CanActivate {
 
     const { roleUser } = req;
 
+    // If user has ADMIN role, they always have access
+    if (roleUser === ROLES.ADMIN) {
+      return true;
+    }
+
     if (roles === undefined) {
       if (!admin) {
         return true;
@@ -47,19 +52,17 @@ export class RolesGuard implements CanActivate {
         return true;
       } else {
         throw new UnauthorizedException(
-          'No tienes permisos para esta operacion',
+          'You do not have permissions for this operation',
         );
       }
-    }
-
-    if (roleUser === ROLES.ADMIN) {
-      return true;
     }
 
     const isAuth = roles.some((role) => role === roleUser);
 
     if (!isAuth) {
-      throw new UnauthorizedException('No tienes permisos para esta operacion');
+      throw new UnauthorizedException(
+        'You do not have permissions for this operation',
+      );
     }
     return true;
   }

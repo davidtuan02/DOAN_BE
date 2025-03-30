@@ -1,2 +1,2 @@
 SELECT 'CREATE DATABASE postgres'
-WHERE NOT EXISTS (SELECT FROM postgres WHERE datname = 'postgres')\gexec 
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'postgres');
