@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectsService } from '../../projects/services/projects.service';
 import { ErrorManager } from '../../utils/error-manager.util';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult, Not } from 'typeorm';
 import { TasksDTO, UpdateTaskDTO } from '../dto/tasks.dto';
 import { TasksEntity } from '../entities/tasks.entity';
 import { UsersService } from '../../users/services/users.service';
@@ -97,11 +97,17 @@ export class TasksService {
   ): Promise<TasksEntity> {
     try {
       const task = await this.findTaskById(id);
+
+      // Tạo đối tượng cập nhật bằng cách merge các thuộc tính
       const updatedTask = await this.taskRepository.save({
         ...task,
         ...body,
       });
-      return updatedTask;
+
+      // Tải lại task với đầy đủ relation để trả về
+      const refreshedTask = await this.findTaskById(id);
+
+      return refreshedTask;
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
@@ -164,10 +170,34 @@ export class TasksService {
 
   public async addTaskToSprint(
     taskId: string,
-    sprintId: string,
+    sprintId: string | null,
   ): Promise<TasksEntity> {
     try {
       const task = await this.findTaskById(taskId);
+
+      // Nếu sprintId là null thì xóa task khỏi tất cả sprint
+      if (sprintId === null) {
+        // Tìm tất cả sprint chứa task này
+        const allSprints = await this.sprintRepository.find({
+          relations: ['issues'],
+        });
+
+        // Lọc ra các sprint chứa task này
+        const sprintsWithTask = allSprints.filter(
+          (sprint) =>
+            sprint.issues && sprint.issues.some((issue) => issue.id === taskId),
+        );
+
+        // Xóa task khỏi các sprint này
+        for (const sprint of sprintsWithTask) {
+          sprint.issues = sprint.issues.filter((issue) => issue.id !== taskId);
+          await this.sprintRepository.save(sprint);
+        }
+
+        return task;
+      }
+
+      // Thêm task vào sprint chỉ định
       const sprint = await this.sprintRepository.findOne({
         where: { id: sprintId },
         relations: ['issues'],
@@ -180,12 +210,30 @@ export class TasksService {
         });
       }
 
-      // Since we're using a ManyToMany relationship with a join table
-      // We need to handle this at the Sprint entity level
+      // Khởi tạo mảng issues nếu chưa có
       if (!sprint.issues) {
         sprint.issues = [];
       }
 
+      // Xóa task khỏi các sprint khác nếu có
+      const otherSprints = await this.sprintRepository.find({
+        where: { id: Not(sprintId) },
+        relations: ['issues'],
+      });
+
+      for (const otherSprint of otherSprints) {
+        if (
+          otherSprint.issues &&
+          otherSprint.issues.some((issue) => issue.id === taskId)
+        ) {
+          otherSprint.issues = otherSprint.issues.filter(
+            (issue) => issue.id !== taskId,
+          );
+          await this.sprintRepository.save(otherSprint);
+        }
+      }
+
+      // Thêm task vào sprint mới nếu chưa có
       const taskExists = sprint.issues.some((issue) => issue.id === task.id);
       if (!taskExists) {
         sprint.issues.push(task);
