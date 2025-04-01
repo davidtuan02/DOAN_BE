@@ -130,6 +130,33 @@ export class TasksController {
   })
   @UseGuards(TeamRoleGuard)
   @TeamRole(TEAM_ROLE.MEMBER)
+  @Put(':id/reporter')
+  public async setTaskReporter(
+    @Param('id') id: string,
+    @Body() body: AssignTaskDTO,
+  ) {
+    return this.tasksService.setTaskReporter(id, body.userId);
+  }
+
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @ApiParam({
+    name: 'id',
+  })
+  @Get(':id/reporter')
+  public async getTaskReporter(@Param('id') id: string) {
+    return this.tasksService.getTaskReporter(id);
+  }
+
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @ApiParam({
+    name: 'id',
+  })
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
   @Put(':id/move')
   public async moveTaskToColumn(
     @Param('id') id: string,

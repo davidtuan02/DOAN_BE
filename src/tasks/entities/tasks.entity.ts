@@ -16,8 +16,11 @@ export class TasksEntity extends BaseEntity {
   @Column({ type: 'enum', enum: STATUS_TASK })
   status: STATUS_TASK;
 
-  @Column()
-  responsableName: string;
+  @ManyToOne(() => UsersEntity, { nullable: true })
+  @JoinColumn({
+    name: 'reporter_id',
+  })
+  reporter: UsersEntity;
 
   @ManyToOne(() => ProjectsEntity, (project) => project.tasks)
   @JoinColumn({
@@ -38,4 +41,28 @@ export class TasksEntity extends BaseEntity {
     name: 'assignee_id',
   })
   assignee: UsersEntity;
+
+  @Column({ nullable: true })
+  type: string;
+
+  @Column({ nullable: true })
+  priority: string;
+
+  @Column({ nullable: true })
+  storyPoints: number;
+
+  @Column('text', { array: true, nullable: true })
+  labels: string[];
+
+  @Column({ nullable: true })
+  teamId: string;
+
+  @Column({ nullable: true })
+  sprintId: string;
+
+  @Column({ nullable: true })
+  sprintName: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  dueDate: Date;
 }

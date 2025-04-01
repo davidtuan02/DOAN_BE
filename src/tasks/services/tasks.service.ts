@@ -8,6 +8,7 @@ import { TasksEntity } from '../entities/tasks.entity';
 import { UsersService } from '../../users/services/users.service';
 import { BoardColumnEntity } from '../../projects/entities/board-column.entity';
 import { SprintEntity } from '../../projects/entities/sprint.entity';
+import { UsersEntity } from '../../users/entities/user.entity';
 
 @Injectable()
 export class TasksService {
@@ -34,10 +35,27 @@ export class TasksService {
           message: 'No se ha encontrado el proyecto',
         });
       }
-      return await this.taskRepository.save({
+
+      // Add reporter if reporterId is provided
+      let reporter = null;
+      if (body.reporterId) {
+        reporter = await this.usersService.findUserById(body.reporterId);
+        if (!reporter) {
+          throw new ErrorManager({
+            type: 'NOT_FOUND',
+            message: `El usuario con ID ${body.reporterId} no existe`,
+          });
+        }
+      }
+
+      // Create task with project and reporter
+      const taskData = {
         ...body,
         project,
-      });
+        reporter,
+      };
+
+      return await this.taskRepository.save(taskData);
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
@@ -46,7 +64,7 @@ export class TasksService {
   public async findAllTasks(): Promise<TasksEntity[]> {
     try {
       const tasks = await this.taskRepository.find({
-        relations: ['project', 'boardColumn', 'assignee'],
+        relations: ['project', 'boardColumn', 'assignee', 'reporter'],
       });
       if (tasks.length === 0) {
         throw new ErrorManager({
@@ -64,7 +82,7 @@ export class TasksService {
     try {
       const task = await this.taskRepository.findOne({
         where: { id },
-        relations: ['project', 'boardColumn', 'assignee'],
+        relations: ['project', 'boardColumn', 'assignee', 'reporter'],
       });
       if (!task) {
         throw new ErrorManager({
@@ -83,7 +101,7 @@ export class TasksService {
       const project = await this.projectService.findProjectById(projectId);
       const tasks = await this.taskRepository.find({
         where: { project: { id: projectId } },
-        relations: ['boardColumn', 'assignee'],
+        relations: ['boardColumn', 'assignee', 'reporter'],
       });
       return tasks;
     } catch (error) {
@@ -241,6 +259,44 @@ export class TasksService {
       }
 
       return task;
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  /**
+   * Get the reporter for a task
+   */
+  public async getTaskReporter(taskId: string): Promise<UsersEntity> {
+    try {
+      const task = await this.findTaskById(taskId);
+
+      if (!task.reporter) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `La tarea con ID ${taskId} no tiene reportero asignado`,
+        });
+      }
+
+      return task.reporter;
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  /**
+   * Set reporter for a task
+   */
+  public async setTaskReporter(
+    taskId: string,
+    userId: string,
+  ): Promise<TasksEntity> {
+    try {
+      const task = await this.findTaskById(taskId);
+      const user = await this.usersService.findUserById(userId);
+
+      task.reporter = user;
+      return await this.taskRepository.save(task);
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
