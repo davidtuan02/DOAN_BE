@@ -34,18 +34,12 @@ export class TeamsService {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
 
-      console.log('Creating team for user:', userId);
-      console.log('Team data:', teamData);
-
       const newTeam = this.teamRepository.create({
         ...teamData,
         createdBy: userId,
       });
 
-      console.log('New team object:', newTeam);
-
       const team = await this.teamRepository.save(newTeam);
-      console.log('Team saved successfully:', team);
 
       try {
         // Add creator as team leader
@@ -53,7 +47,6 @@ export class TeamsService {
           userId,
           role: TEAM_ROLE.LEADER,
         });
-        console.log('User added as team leader');
       } catch (memberError) {
         console.error('Error adding user as team leader:', memberError);
         // Don't fail the whole operation if this step fails

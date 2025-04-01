@@ -48,9 +48,6 @@ export class TeamsController {
         );
       }
 
-      console.log('Creating team with user ID:', req.user.id);
-      console.log('Request body:', body);
-
       return await this.teamsService.createTeam(req.user.id, body);
     } catch (error) {
       console.error('Error creating team:', error);

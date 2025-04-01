@@ -47,7 +47,7 @@ export class SprintService {
   public async findSprintById(id: string): Promise<SprintEntity> {
     const sprint = await this.sprintRepository.findOne({
       where: { id },
-      relations: ['board', 'issues'],
+      relations: ['board', 'issues', 'issues.assignee', 'issues.reporter'],
     });
 
     if (!sprint) {

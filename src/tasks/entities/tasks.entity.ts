@@ -54,14 +54,8 @@ export class TasksEntity extends BaseEntity {
   @Column('text', { array: true, nullable: true })
   labels: string[];
 
-  @Column({ nullable: true })
-  teamId: string;
-
-  @Column({ nullable: true })
-  sprintId: string;
-
-  @Column({ nullable: true })
-  sprintName: string;
+  @Column({ type: 'timestamp', nullable: true })
+  startDate: Date;
 
   @Column({ type: 'timestamp', nullable: true })
   dueDate: Date;

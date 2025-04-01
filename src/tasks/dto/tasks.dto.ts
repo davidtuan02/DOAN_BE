@@ -60,21 +60,6 @@ export class TasksDTO {
 
   @ApiProperty()
   @IsOptional()
-  @IsUUID()
-  teamId?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsUUID()
-  sprintId?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  sprintName?: string;
-
-  @ApiProperty()
-  @IsOptional()
   @IsDate()
   @Type(() => Date)
   dueDate?: Date;

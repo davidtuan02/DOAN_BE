@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Init1743365028648 implements MigrationInterface {
-    name = 'Init1743365028648'
+export class Init1743529437601 implements MigrationInterface {
+    name = 'Init1743529437601'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TYPE "public"."sprints_status_enum" AS ENUM('planning', 'active', 'completed')`);
@@ -9,8 +9,7 @@ export class Init1743365028648 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "boards" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "project_id" uuid, CONSTRAINT "PK_606923b0b068ef262dfdcd18f44" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "board_columns" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "order" integer NOT NULL, "board_id" uuid, CONSTRAINT "PK_e3da51ad65560ca495d3a621d32" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."task_status_enum" AS ENUM('CREATED', 'IN_PROGRESS', 'FINISH')`);
-        await queryRunner.query(`CREATE TYPE "public"."task_type_enum" AS ENUM('TASK', 'BUG', 'STORY')`);
-        await queryRunner.query(`CREATE TABLE "task" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "task_name" character varying NOT NULL, "task_description" character varying NOT NULL, "status" "public"."task_status_enum" NOT NULL, "responsable_name" character varying NOT NULL, "type" "public"."task_type_enum" NOT NULL DEFAULT 'TASK', "project_id" uuid, "board_column_id" uuid, "assignee_id" uuid, "creator_id" uuid, CONSTRAINT "PK_fb213f79ee45060ba925ecd576e" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "task" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "task_name" character varying NOT NULL, "task_description" character varying NOT NULL, "status" "public"."task_status_enum" NOT NULL, "type" character varying, "priority" character varying, "story_points" integer, "labels" text array, "due_date" TIMESTAMP, "reporter_id" uuid, "project_id" uuid, "board_column_id" uuid, "assignee_id" uuid, CONSTRAINT "PK_fb213f79ee45060ba925ecd576e" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "teams" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "description" character varying, "created_by" character varying NOT NULL, CONSTRAINT "PK_7e5523774a38b08a6236d322403" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."custom_columns_type_enum" AS ENUM('text', 'number', 'date', 'dropdown', 'checkbox')`);
         await queryRunner.query(`CREATE TABLE "custom_columns" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "type" "public"."custom_columns_type_enum" NOT NULL, "options" json, "required" boolean NOT NULL DEFAULT false, "project_id" uuid, CONSTRAINT "PK_95a711835284b053b4387b2cb3b" PRIMARY KEY ("id"))`);
@@ -32,10 +31,10 @@ export class Init1743365028648 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "sprints" ADD CONSTRAINT "FK_c050c5f2e8cad28ad9820a467e9" FOREIGN KEY ("board_id") REFERENCES "boards"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "boards" ADD CONSTRAINT "FK_1542ae826c0dfeaf4c79e07fc57" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "board_columns" ADD CONSTRAINT "FK_55e6772f5b84a2fb358db473313" FOREIGN KEY ("board_id") REFERENCES "boards"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "task" ADD CONSTRAINT "FK_0005dde59b747e4cc625d72c5a8" FOREIGN KEY ("reporter_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "task" ADD CONSTRAINT "FK_1f53e7ffe94530f9e0221224d29" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "task" ADD CONSTRAINT "FK_5e3961a67dddffd8ab78ab589e2" FOREIGN KEY ("board_column_id") REFERENCES "board_columns"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "task" ADD CONSTRAINT "FK_75114a0b55080c15694f3d40ec9" FOREIGN KEY ("assignee_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "task" ADD CONSTRAINT "FK_ec30ef94c7d981113563d91472b" FOREIGN KEY ("creator_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "custom_columns" ADD CONSTRAINT "FK_8934f36d80d3559ff31f9821bda" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "filter_criteria" ADD CONSTRAINT "FK_af3c48c2e3d187f53542c4540d3" FOREIGN KEY ("filter_id") REFERENCES "custom_filters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "custom_filters" ADD CONSTRAINT "FK_e7273a7a58a1b93bbb70f4f752d" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -63,10 +62,10 @@ export class Init1743365028648 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "custom_filters" DROP CONSTRAINT "FK_e7273a7a58a1b93bbb70f4f752d"`);
         await queryRunner.query(`ALTER TABLE "filter_criteria" DROP CONSTRAINT "FK_af3c48c2e3d187f53542c4540d3"`);
         await queryRunner.query(`ALTER TABLE "custom_columns" DROP CONSTRAINT "FK_8934f36d80d3559ff31f9821bda"`);
-        await queryRunner.query(`ALTER TABLE "task" DROP CONSTRAINT "FK_ec30ef94c7d981113563d91472b"`);
         await queryRunner.query(`ALTER TABLE "task" DROP CONSTRAINT "FK_75114a0b55080c15694f3d40ec9"`);
         await queryRunner.query(`ALTER TABLE "task" DROP CONSTRAINT "FK_5e3961a67dddffd8ab78ab589e2"`);
         await queryRunner.query(`ALTER TABLE "task" DROP CONSTRAINT "FK_1f53e7ffe94530f9e0221224d29"`);
+        await queryRunner.query(`ALTER TABLE "task" DROP CONSTRAINT "FK_0005dde59b747e4cc625d72c5a8"`);
         await queryRunner.query(`ALTER TABLE "board_columns" DROP CONSTRAINT "FK_55e6772f5b84a2fb358db473313"`);
         await queryRunner.query(`ALTER TABLE "boards" DROP CONSTRAINT "FK_1542ae826c0dfeaf4c79e07fc57"`);
         await queryRunner.query(`ALTER TABLE "sprints" DROP CONSTRAINT "FK_c050c5f2e8cad28ad9820a467e9"`);
@@ -89,7 +88,6 @@ export class Init1743365028648 implements MigrationInterface {
         await queryRunner.query(`DROP TYPE "public"."custom_columns_type_enum"`);
         await queryRunner.query(`DROP TABLE "teams"`);
         await queryRunner.query(`DROP TABLE "task"`);
-        await queryRunner.query(`DROP TYPE "public"."task_type_enum"`);
         await queryRunner.query(`DROP TYPE "public"."task_status_enum"`);
         await queryRunner.query(`DROP TABLE "board_columns"`);
         await queryRunner.query(`DROP TABLE "boards"`);
