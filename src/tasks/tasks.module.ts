@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectsModule } from '../projects/projects.module';
 import { TasksController } from './controllers/tasks.controller';
@@ -19,7 +19,7 @@ import { UsersModule } from '../users/users.module';
       SprintEntity,
       CommentEntity,
     ]),
-    ProjectsModule,
+    forwardRef(() => ProjectsModule),
     UsersModule,
   ],
   providers: [TasksService, CommentService],

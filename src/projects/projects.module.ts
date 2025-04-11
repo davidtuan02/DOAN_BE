@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ProjectsService } from './services/projects.service';
 import { ProjectsController } from './controllers/projects.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,6 +20,11 @@ import { TeamsService } from '../teams/services/teams.service';
 import { TeamsEntity } from '../teams/entities/teams.entity';
 import { SprintService } from './services/sprint.service';
 import { SprintController } from './controllers/sprint.controller';
+import { FiltersController } from './controllers/filters.controller';
+import { FiltersService } from './services/filters.service';
+import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
+import { TasksModule } from '../tasks/tasks.module';
 
 @Module({
   imports: [
@@ -37,6 +42,9 @@ import { SprintController } from './controllers/sprint.controller';
     ]),
     ProvidersModule,
     TeamsModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => UsersModule),
+    forwardRef(() => TasksModule),
   ],
   providers: [
     ProjectsService,
@@ -45,8 +53,9 @@ import { SprintController } from './controllers/sprint.controller';
     HttpCustomService,
     TeamsService,
     SprintService,
+    FiltersService,
   ],
-  controllers: [ProjectsController, SprintController],
-  exports: [ProjectsService, SprintService, TypeOrmModule],
+  controllers: [ProjectsController, SprintController, FiltersController],
+  exports: [ProjectsService, SprintService, TypeOrmModule, FiltersService],
 })
 export class ProjectsModule {}
