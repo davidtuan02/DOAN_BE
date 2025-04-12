@@ -1,9 +1,10 @@
 import { STATUS_TASK } from '../../constants/status-task';
 import { ProjectsEntity } from '../../projects/entities/projects.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../config/base.entity';
 import { BoardColumnEntity } from '../../projects/entities/board-column.entity';
 import { UsersEntity } from '../../users/entities/user.entity';
+import { AttachmentEntity } from './attachment.entity';
 
 @Entity({ name: 'task' })
 export class TasksEntity extends BaseEntity {
@@ -59,4 +60,7 @@ export class TasksEntity extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   dueDate: Date;
+
+  @OneToMany(() => AttachmentEntity, (attachment) => attachment.task)
+  attachments: AttachmentEntity[];
 }
