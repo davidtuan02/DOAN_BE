@@ -43,6 +43,16 @@ export class TasksEntity extends BaseEntity {
   })
   assignee: UsersEntity;
 
+  // Parent-child relationships
+  @ManyToOne(() => TasksEntity, (task) => task.childTasks, { nullable: true })
+  @JoinColumn({
+    name: 'parent_task_id',
+  })
+  parentTask: TasksEntity;
+
+  @OneToMany(() => TasksEntity, (task) => task.parentTask)
+  childTasks: TasksEntity[];
+
   @Column({ nullable: true })
   type: string;
 

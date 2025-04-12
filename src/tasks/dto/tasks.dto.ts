@@ -30,9 +30,9 @@ export class TasksDTO {
   status: STATUS_TASK;
 
   @ApiProperty()
-  @IsOptional()
+  @IsNotEmpty()
   @IsUUID()
-  reporterId?: string;
+  reporterId: string;
 
   @ApiProperty()
   @IsOptional()
@@ -55,7 +55,6 @@ export class TasksDTO {
 
   @ApiProperty()
   @IsOptional()
-  @IsArray()
   labels?: string[];
 
   @ApiProperty()
@@ -63,6 +62,11 @@ export class TasksDTO {
   @IsDate()
   @Type(() => Date)
   dueDate?: Date;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsUUID()
+  parentTaskId?: string;
 }
 
 export class UpdateTaskDTO extends PartialType(TasksDTO) {}
@@ -86,4 +90,54 @@ export class AddToSprintDTO {
   @IsNotEmpty()
   @IsUUID()
   sprintId: string;
+}
+
+export class CreateChildTaskDTO {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  taskName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  taskDescription: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(STATUS_TASK)
+  status: STATUS_TASK;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsUUID()
+  reporterId: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsUUID()
+  parentTaskId: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  priority?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNumber()
+  storyPoints?: number;
+
+  @ApiProperty()
+  @IsOptional()
+  labels?: string[];
+
+  @ApiProperty()
+  @IsOptional()
+  dueDate?: Date;
 }

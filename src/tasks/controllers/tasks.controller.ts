@@ -16,6 +16,7 @@ import { RolesGuard } from '../../auth/guards/role.guard';
 import {
   AddToSprintDTO,
   AssignTaskDTO,
+  CreateChildTaskDTO,
   MoveTaskDTO,
   TasksDTO,
   UpdateTaskDTO,
@@ -187,5 +188,64 @@ export class TasksController {
     @Param('userId') userId: string,
   ) {
     return await this.tasksService.assignTask(taskId, userId);
+  }
+
+  /**
+   * Create a child task
+   */
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
+  @Post('child')
+  public async createChildTask(@Body() body: CreateChildTaskDTO) {
+    return this.tasksService.createChildTask(body);
+  }
+
+  /**
+   * Get all child tasks for a parent task
+   */
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @ApiParam({
+    name: 'parentId',
+  })
+  @Get(':parentId/children')
+  public async getChildTasks(@Param('parentId') parentId: string) {
+    return this.tasksService.getChildTasks(parentId);
+  }
+
+  /**
+   * Get parent task for a child task
+   */
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @ApiParam({
+    name: 'childId',
+  })
+  @Get(':childId/parent')
+  public async getParentTask(@Param('childId') childId: string) {
+    return this.tasksService.getParentTask(childId);
+  }
+
+  /**
+   * Remove parent-child relationship
+   */
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  @ApiParam({
+    name: 'childId',
+  })
+  @UseGuards(TeamRoleGuard)
+  @TeamRole(TEAM_ROLE.MEMBER)
+  @Delete(':childId/parent')
+  public async removeParentChildRelationship(
+    @Param('childId') childId: string,
+  ) {
+    return this.tasksService.removeParentChildRelationship(childId);
   }
 }

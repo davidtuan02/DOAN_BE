@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectsService } from '../../projects/services/projects.service';
 import { ErrorManager } from '../../utils/error-manager.util';
 import { DeleteResult, Repository, UpdateResult, Not } from 'typeorm';
-import { TasksDTO, UpdateTaskDTO } from '../dto/tasks.dto';
+import { CreateChildTaskDTO, TasksDTO, UpdateTaskDTO } from '../dto/tasks.dto';
 import { TasksEntity } from '../entities/tasks.entity';
 import { UsersService } from '../../users/services/users.service';
 import { BoardColumnEntity } from '../../projects/entities/board-column.entity';
@@ -57,11 +57,24 @@ export class TasksService {
         }
       }
 
-      // Create task with project and reporter
+      // Check for parentTask if parentTaskId is provided
+      let parentTask = null;
+      if (body.parentTaskId) {
+        parentTask = await this.findTaskById(body.parentTaskId);
+        if (!parentTask) {
+          throw new ErrorManager({
+            type: 'NOT_FOUND',
+            message: `La tarea padre con ID ${body.parentTaskId} no existe`,
+          });
+        }
+      }
+
+      // Create task with project, reporter and parent task
       const taskData = {
         ...body,
         project,
         reporter,
+        parentTask,
       };
 
       return await this.taskRepository.save(taskData);
@@ -91,7 +104,14 @@ export class TasksService {
     try {
       const task = await this.taskRepository.findOne({
         where: { id },
-        relations: ['project', 'boardColumn', 'assignee', 'reporter'],
+        relations: [
+          'project',
+          'boardColumn',
+          'assignee',
+          'reporter',
+          'parentTask',
+          'childTasks',
+        ],
       });
       if (!task) {
         throw new ErrorManager({
@@ -318,6 +338,141 @@ export class TasksService {
 
       task.reporter = user;
       return await this.taskRepository.save(task);
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  /**
+   * Create a child task for a parent task
+   */
+  public async createChildTask(body: CreateChildTaskDTO): Promise<TasksEntity> {
+    try {
+      // Find the parent task
+      const parentTask = await this.findTaskById(body.parentTaskId);
+      if (!parentTask) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `La tarea padre con ID ${body.parentTaskId} no existe`,
+        });
+      }
+
+      // Add reporter if reporterId is provided
+      let reporter = null;
+      if (body.reporterId) {
+        reporter = await this.usersService.findUserById(body.reporterId);
+        if (!reporter) {
+          throw new ErrorManager({
+            type: 'NOT_FOUND',
+            message: `El usuario con ID ${body.reporterId} no existe`,
+          });
+        }
+      }
+
+      // Create child task with parent task info, project inherited from parent
+      const taskData = {
+        ...body,
+        project: parentTask.project,
+        reporter,
+        parentTask,
+      };
+
+      const childTask = await this.taskRepository.save(taskData);
+
+      // Create notification for the parent task reporter
+      if (parentTask.reporter) {
+        await this.notificationService.createNotification(
+          parentTask.reporter,
+          NotificationType.TASK_UPDATED,
+          `Child task added: ${childTask.taskName}`,
+          `A new child task "${childTask.taskName}" has been added to your task "${parentTask.taskName}"`,
+          `/projects/${parentTask.project.id}/board?taskId=${parentTask.id}`,
+          { taskId: parentTask.id, projectId: parentTask.project.id },
+        );
+      }
+
+      return childTask;
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  /**
+   * Get all child tasks for a parent task
+   */
+  public async getChildTasks(parentId: string): Promise<TasksEntity[]> {
+    try {
+      const parentTask = await this.findTaskById(parentId);
+
+      // Find all tasks that have this parent ID
+      const childTasks = await this.taskRepository.find({
+        where: { parentTask: { id: parentId } },
+        relations: ['assignee', 'reporter', 'boardColumn'],
+      });
+
+      return childTasks;
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  /**
+   * Get parent task for a child task
+   */
+  public async getParentTask(childId: string): Promise<TasksEntity> {
+    try {
+      const childTask = await this.findTaskById(childId);
+
+      if (!childTask.parentTask) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `La tarea con ID ${childId} no tiene una tarea padre`,
+        });
+      }
+
+      // Return the parent task with full details
+      return await this.findTaskById(childTask.parentTask.id);
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  /**
+   * Remove parent-child relationship
+   */
+  public async removeParentChildRelationship(
+    childId: string,
+  ): Promise<TasksEntity> {
+    try {
+      const childTask = await this.findTaskById(childId);
+
+      if (!childTask.parentTask) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: `La tarea con ID ${childId} no tiene una tarea padre`,
+        });
+      }
+
+      // Store parent reference for notification
+      const parentTask = childTask.parentTask;
+
+      // Remove parent relationship
+      childTask.parentTask = null;
+      const updatedTask = await this.taskRepository.save(childTask);
+
+      // Create notification for the parent task reporter
+      if (parentTask && parentTask.reporter) {
+        await this.notificationService.createNotification(
+          parentTask.reporter,
+          NotificationType.TASK_UPDATED,
+          `Child task removed: ${childTask.taskName}`,
+          `The child task "${childTask.taskName}" has been removed from your task "${parentTask.taskName}"`,
+          `/projects/${parentTask.project.id}/board?taskId=${parentTask.id}`,
+          { taskId: parentTask.id, projectId: parentTask.project.id },
+        );
+      }
+
+      return updatedTask;
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
