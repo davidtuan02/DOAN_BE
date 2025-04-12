@@ -180,4 +180,12 @@ export class TasksController {
   ) {
     return this.tasksService.addTaskToSprint(id, body.sprintId);
   }
+
+  @Post('/:taskId/assign/:userId')
+  public async assignTask(
+    @Param('taskId') taskId: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.tasksService.assignTask(taskId, userId);
+  }
 }

@@ -10,6 +10,7 @@ import { CommentService } from './services/comment.service';
 import { BoardColumnEntity } from '../projects/entities/board-column.entity';
 import { SprintEntity } from '../projects/entities/sprint.entity';
 import { UsersModule } from '../users/users.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from '../users/users.module';
     ]),
     forwardRef(() => ProjectsModule),
     UsersModule,
+    forwardRef(() => NotificationsModule),
   ],
   providers: [TasksService, CommentService],
   controllers: [TasksController, CommentController],

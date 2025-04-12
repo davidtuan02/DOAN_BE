@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectsService } from '../../projects/services/projects.service';
 import { ErrorManager } from '../../utils/error-manager.util';
@@ -9,6 +14,8 @@ import { UsersService } from '../../users/services/users.service';
 import { BoardColumnEntity } from '../../projects/entities/board-column.entity';
 import { SprintEntity } from '../../projects/entities/sprint.entity';
 import { UsersEntity } from '../../users/entities/user.entity';
+import { NotificationService } from '../../notifications/services/notification.service';
+import { NotificationType } from '../../notifications/entities/notification.entity';
 
 @Injectable()
 export class TasksService {
@@ -21,6 +28,8 @@ export class TasksService {
     private readonly sprintRepository: Repository<SprintEntity>,
     private readonly projectService: ProjectsService,
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => NotificationService))
+    private readonly notificationService: NotificationService,
   ) {}
 
   public async createTask(
@@ -156,7 +165,19 @@ export class TasksService {
       const user = await this.usersService.findUserById(userId);
 
       task.assignee = user;
-      return await this.taskRepository.save(task);
+      const updatedTask = await this.taskRepository.save(task);
+
+      // Create notification for the assigned user
+      await this.notificationService.createNotification(
+        user,
+        NotificationType.TASK_ASSIGNED,
+        `New task assigned: ${task.taskName}`,
+        `You've been assigned to the task "${task.taskName}" in project "${task.project.name}"`,
+        `/projects/${task.project.id}/board?taskId=${taskId}`,
+        { taskId, projectId: task.project.id },
+      );
+
+      return updatedTask;
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
@@ -300,5 +321,16 @@ export class TasksService {
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
+  }
+
+  /**
+   * Assign a task to a user - used by the new endpoints
+   */
+  public async assignTask(
+    taskId: string,
+    userId: string,
+  ): Promise<TasksEntity> {
+    // Reuse the existing method to maintain notification logic
+    return this.assignTaskToUser(taskId, userId);
   }
 }
