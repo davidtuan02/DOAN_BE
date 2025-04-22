@@ -141,9 +141,40 @@ export class TasksService {
   public async updateTask(
     id: string,
     body: UpdateTaskDTO,
+    updatedByUserId?: string,
   ): Promise<TasksEntity> {
     try {
       const task = await this.findTaskById(id);
+
+      // Xác định những trường đã thay đổi để thêm vào thông báo
+      const changes: string[] = [];
+      for (const key in body) {
+        if (body[key] !== undefined && task[key] !== body[key]) {
+          // Định dạng các thay đổi phù hợp
+          switch (key) {
+            case 'taskName':
+              changes.push(`title changed to "${body[key]}"`);
+              break;
+            case 'status':
+              changes.push(`status changed to ${body[key]}`);
+              break;
+            case 'priority':
+              changes.push(`priority changed to ${body[key]}`);
+              break;
+            case 'storyPoints':
+              changes.push(`story points changed to ${body[key]}`);
+              break;
+            case 'dueDate':
+              changes.push(`due date updated`);
+              break;
+            case 'taskDescription':
+              changes.push(`description updated`);
+              break;
+            default:
+              changes.push(`${key} updated`);
+          }
+        }
+      }
 
       // Tạo đối tượng cập nhật bằng cách merge các thuộc tính
       const updatedTask = await this.taskRepository.save({
@@ -153,6 +184,29 @@ export class TasksService {
 
       // Tải lại task với đầy đủ relation để trả về
       const refreshedTask = await this.findTaskById(id);
+
+      // Gửi thông báo cho người được assign nếu có và không phải người cập nhật
+      if (refreshedTask.assignee && updatedByUserId) {
+        try {
+          // Tìm user đã thực hiện cập nhật
+          const updatedByUser = await this.usersService.findUserById(
+            updatedByUserId,
+          );
+
+          // Tạo thông báo cho người được assign
+          await this.notificationService.createIssueUpdatedNotification(
+            refreshedTask.assignee,
+            updatedByUser,
+            refreshedTask.taskName,
+            refreshedTask.id,
+            refreshedTask.project.id,
+            changes,
+          );
+        } catch (error) {
+          // Log lỗi nhưng không ảnh hưởng đến việc cập nhật task
+          console.error('Error sending notification:', error.message);
+        }
+      }
 
       return refreshedTask;
     } catch (error) {

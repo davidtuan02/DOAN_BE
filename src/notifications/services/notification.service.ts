@@ -35,6 +35,58 @@ export class NotificationService {
     return this.notificationRepository.save(notification);
   }
 
+  /**
+   * Tạo thông báo khi một issue được cập nhật
+   * @param user Người nhận thông báo (người được assign)
+   * @param updatedBy Người cập nhật issue
+   * @param issueTitle Tiêu đề của issue
+   * @param issueId ID của issue
+   * @param projectId ID của project
+   * @param changes Những thay đổi đã được thực hiện
+   */
+  async createIssueUpdatedNotification(
+    user: UsersEntity,
+    updatedBy: UsersEntity,
+    issueTitle: string,
+    issueId: string,
+    projectId: string,
+    changes: string[] = [],
+  ): Promise<NotificationEntity> {
+    // Bỏ qua nếu người cập nhật cũng chính là người nhận thông báo
+    if (user.id === updatedBy.id) {
+      return null;
+    }
+
+    const updaterName = `${updatedBy.firstName} ${updatedBy.lastName}`;
+    const title = `Issue đã được cập nhật`;
+    let message = `${updaterName} đã cập nhật issue "${issueTitle}"`;
+
+    // Thêm chi tiết về những thay đổi nếu có
+    if (changes.length > 0) {
+      message += `: ${changes.join(', ')}`;
+    }
+
+    // Tạo link đến issue
+    const link = `/projects/${projectId}/issues/${issueId}`;
+
+    // Metadata chứa thông tin bổ sung
+    const metadata = {
+      issueId,
+      projectId,
+      updatedBy: updatedBy.id,
+      changes,
+    };
+
+    return this.createNotification(
+      user,
+      NotificationType.TASK_UPDATED,
+      title,
+      message,
+      link,
+      metadata,
+    );
+  }
+
   async getUserNotifications(userId: string): Promise<NotificationEntity[]> {
     return this.notificationRepository.find({
       where: { user: { id: userId } },

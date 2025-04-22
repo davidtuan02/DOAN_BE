@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommentEntity } from '../entities/comment.entity';
 import { CreateCommentDTO, UpdateCommentDTO } from '../dto/comment.dto';
 import { UsersService } from '../../users/services/users.service';
 import { TasksService } from './tasks.service';
+import { NotificationService } from '../../notifications/services/notification.service';
+import { NotificationType } from '../../notifications/entities/notification.entity';
 
 @Injectable()
 export class CommentService {
@@ -13,6 +20,8 @@ export class CommentService {
     private readonly commentRepository: Repository<CommentEntity>,
     private readonly usersService: UsersService,
     private readonly tasksService: TasksService,
+    @Inject(forwardRef(() => NotificationService))
+    private readonly notificationService: NotificationService,
   ) {}
 
   public async create(
@@ -34,7 +43,36 @@ export class CommentService {
       userId: userId,
     });
 
-    return this.commentRepository.save(newComment);
+    const savedComment = await this.commentRepository.save(newComment);
+
+    // Send notification to assignee if exists and is not the commenter
+    if (task.assignee && task.assignee.id !== userId) {
+      try {
+        // Get commenter details
+        const commenter = await this.usersService.findUserById(userId);
+        const commenterName = `${commenter.firstName} ${commenter.lastName}`;
+
+        // Create notification
+        await this.notificationService.createNotification(
+          task.assignee,
+          NotificationType.COMMENT_ADDED,
+          'New comment on your task',
+          `${commenterName} commented on task "${task.taskName}"`,
+          `/projects/${task.project.id}/issues/${task.id}`,
+          {
+            taskId: task.id,
+            commentId: savedComment.id,
+            projectId: task.project?.id,
+            commentedBy: userId,
+          },
+        );
+      } catch (error) {
+        console.error('Error sending comment notification:', error.message);
+        // Don't fail the comment creation if notification fails
+      }
+    }
+
+    return savedComment;
   }
 
   public async findAllByTaskId(taskId: string): Promise<CommentEntity[]> {

@@ -38,7 +38,6 @@ export class CommentController {
   @ApiParam({
     name: 'taskId',
   })
-  @AccessLevel('DEVELOPER')
   @Get('task/:taskId')
   public async findCommentsByTaskId(@Param('taskId') taskId: string) {
     return this.commentService.findAllByTaskId(taskId);
@@ -47,7 +46,6 @@ export class CommentController {
   @ApiHeader({
     name: 'tasks_token',
   })
-  @AccessLevel('DEVELOPER')
   @Post()
   public async createComment(
     @Body() body: CreateCommentDTO,
@@ -63,7 +61,6 @@ export class CommentController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('DEVELOPER')
   @Put(':id')
   public async updateComment(
     @Param('id') id: string,
@@ -80,7 +77,6 @@ export class CommentController {
   @ApiParam({
     name: 'id',
   })
-  @AccessLevel('DEVELOPER')
   @Delete(':id')
   public async deleteComment(
     @Param('id') id: string,

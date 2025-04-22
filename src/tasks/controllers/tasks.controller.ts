@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiHeader, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AccessLevel } from '../../auth/decorators/access-level.decorator';
@@ -90,8 +91,11 @@ export class TasksController {
   public async updateTask(
     @Param('id') id: string,
     @Body() body: UpdateTaskDTO,
+    @Req() request: any,
   ) {
-    return this.tasksService.updateTask(id, body);
+    // Lấy userId của người dùng hiện tại từ token
+    const userId = request.user?.id;
+    return this.tasksService.updateTask(id, body, userId);
   }
 
   @ApiHeader({
