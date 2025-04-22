@@ -25,6 +25,8 @@ import { FiltersService } from './services/filters.service';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 import { TasksModule } from '../tasks/tasks.module';
+import { BoardColumnService } from './services/board-column.service';
+import { BoardColumnController } from './controllers/board-column.controller';
 
 @Module({
   imports: [
@@ -54,8 +56,20 @@ import { TasksModule } from '../tasks/tasks.module';
     TeamsService,
     SprintService,
     FiltersService,
+    BoardColumnService,
   ],
-  controllers: [ProjectsController, SprintController, FiltersController],
-  exports: [ProjectsService, SprintService, TypeOrmModule, FiltersService],
+  controllers: [
+    ProjectsController,
+    SprintController,
+    FiltersController,
+    BoardColumnController,
+  ],
+  exports: [
+    ProjectsService,
+    SprintService,
+    TypeOrmModule,
+    FiltersService,
+    BoardColumnService,
+  ],
 })
 export class ProjectsModule {}

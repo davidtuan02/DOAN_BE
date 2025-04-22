@@ -11,6 +11,15 @@ export class BoardColumnEntity extends BaseEntity {
   @Column()
   order: number;
 
+  @Column({ nullable: true })
+  color: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ default: false })
+  isDefault: boolean;
+
   @ManyToOne(() => BoardEntity, (board) => board.columns)
   @JoinColumn({ name: 'board_id' })
   board: BoardEntity;
