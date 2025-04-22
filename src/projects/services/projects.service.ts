@@ -11,6 +11,12 @@ import { ErrorManager } from '../../utils/error-manager.util';
 import { TeamsEntity } from '../../teams/entities/teams.entity';
 import { BoardEntity } from '../entities/board.entity';
 import { BoardColumnEntity } from '../entities/board-column.entity';
+import {
+  AddProjectMemberDTO,
+  AddMultipleProjectMembersDTO,
+  ProjectMemberResponse,
+  UpdateProjectMemberDTO,
+} from '../dto/project-member.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -78,7 +84,7 @@ export class ProjectsService {
                 accessLevel = ACCESS_LEVEL.OWNER;
                 break;
               case 'leader':
-                accessLevel = ACCESS_LEVEL.MANTEINER;
+                accessLevel = ACCESS_LEVEL.MAINTAINER;
                 break;
               case 'member':
                 accessLevel = ACCESS_LEVEL.DEVELOPER;
@@ -307,6 +313,196 @@ export class ProjectsService {
     } catch (error) {
       console.error('Error creating default board columns:', error);
       // Don't throw here to avoid failing the board creation
+    }
+  }
+
+  public async getProjectMembers(
+    projectId: string,
+  ): Promise<ProjectMemberResponse[]> {
+    try {
+      const project = await this.findProjectById(projectId);
+
+      if (!project.usersIncludes || project.usersIncludes.length === 0) {
+        return [];
+      }
+
+      return project.usersIncludes.map((userProject) => ({
+        id: userProject.id,
+        userId: userProject.user.id,
+        userName: `${userProject.user.firstName} ${userProject.user.lastName}`,
+        userEmail: userProject.user.email,
+        accessLevel: userProject.accessLevel,
+        createdAt: userProject.createdAt,
+        updatedAt: userProject.updatedAt,
+      }));
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  public async addMemberToProject(
+    projectId: string,
+    addMemberDto: AddProjectMemberDTO,
+  ): Promise<ProjectMemberResponse> {
+    try {
+      const project = await this.findProjectById(projectId);
+      const user = await this.usersService.findUserById(addMemberDto.userId);
+
+      // Check if user is already a member of the project
+      const existingRelation = await this.userProjectRepository.findOne({
+        where: {
+          project: { id: projectId },
+          user: { id: addMemberDto.userId },
+        },
+        relations: ['user', 'project'],
+      });
+
+      if (existingRelation) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'User is already a member of this project',
+        });
+      }
+
+      // Create the user-project relationship
+      const newMember = await this.userProjectRepository.save({
+        accessLevel: addMemberDto.accessLevel,
+        user: user,
+        project: project,
+      });
+
+      // Refresh to get full relations
+      const savedMember = await this.userProjectRepository.findOne({
+        where: { id: newMember.id },
+        relations: ['user', 'project'],
+      });
+
+      return {
+        id: savedMember.id,
+        userId: savedMember.user.id,
+        userName: `${savedMember.user.firstName} ${savedMember.user.lastName}`,
+        userEmail: savedMember.user.email,
+        accessLevel: savedMember.accessLevel,
+        createdAt: savedMember.createdAt,
+        updatedAt: savedMember.updatedAt,
+      };
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  public async addMultipleMembersToProject(
+    projectId: string,
+    addMembersDto: AddMultipleProjectMembersDTO,
+  ): Promise<ProjectMemberResponse[]> {
+    try {
+      const results: ProjectMemberResponse[] = [];
+
+      for (const memberDto of addMembersDto.members) {
+        try {
+          const result = await this.addMemberToProject(projectId, memberDto);
+          results.push(result);
+        } catch (error) {
+          // Log the error but continue with other members
+          console.error(
+            `Failed to add member ${memberDto.userId}: ${error.message}`,
+          );
+        }
+      }
+
+      return results;
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  public async updateProjectMember(
+    projectId: string,
+    userId: string,
+    updateDto: UpdateProjectMemberDTO,
+  ): Promise<ProjectMemberResponse> {
+    try {
+      // Find the user-project relation
+      const relation = await this.userProjectRepository.findOne({
+        where: {
+          project: { id: projectId },
+          user: { id: userId },
+        },
+        relations: ['user', 'project'],
+      });
+
+      if (!relation) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'User is not a member of this project',
+        });
+      }
+
+      // Update the access level
+      relation.accessLevel = updateDto.accessLevel;
+      await this.userProjectRepository.save(relation);
+
+      // Refresh to get updated data
+      const updatedRelation = await this.userProjectRepository.findOne({
+        where: { id: relation.id },
+        relations: ['user', 'project'],
+      });
+
+      return {
+        id: updatedRelation.id,
+        userId: updatedRelation.user.id,
+        userName: `${updatedRelation.user.firstName} ${updatedRelation.user.lastName}`,
+        userEmail: updatedRelation.user.email,
+        accessLevel: updatedRelation.accessLevel,
+        createdAt: updatedRelation.createdAt,
+        updatedAt: updatedRelation.updatedAt,
+      };
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
+    }
+  }
+
+  public async removeProjectMember(
+    projectId: string,
+    userId: string,
+  ): Promise<void> {
+    try {
+      // Find the user-project relation
+      const relation = await this.userProjectRepository.findOne({
+        where: {
+          project: { id: projectId },
+          user: { id: userId },
+        },
+      });
+
+      if (!relation) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'User is not a member of this project',
+        });
+      }
+
+      // Check if the user is the owner and it's the last owner
+      if (relation.accessLevel === ACCESS_LEVEL.OWNER) {
+        const ownersCount = await this.userProjectRepository.count({
+          where: {
+            project: { id: projectId },
+            accessLevel: ACCESS_LEVEL.OWNER,
+          },
+        });
+
+        if (ownersCount <= 1) {
+          throw new ErrorManager({
+            type: 'BAD_REQUEST',
+            message: 'Cannot remove the last owner of the project',
+          });
+        }
+      }
+
+      // Remove the relation
+      await this.userProjectRepository.remove(relation);
+    } catch (error) {
+      throw ErrorManager.createSignatureMessage(error.message);
     }
   }
 }

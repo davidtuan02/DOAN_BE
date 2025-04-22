@@ -32,7 +32,7 @@ export class UsersController {
     return await this.usersService.createUser(body);
   }
 
-  @AdminAccess()
+  @PublicAccess()
   @ApiHeader({
     name: 'tasks_token',
   })
@@ -47,6 +47,7 @@ export class UsersController {
   @ApiHeader({
     name: 'tasks_token',
   })
+  @PublicAccess()
   @Get(':id')
   public async findUserById(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.usersService.findUserById(id);

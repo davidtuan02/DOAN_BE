@@ -106,7 +106,7 @@ export class SprintController {
   @ApiHeader({
     name: 'tasks_token',
   })
-  @AccessLevel('MANTEINER')
+  @AccessLevel('MAINTAINER')
   @Delete(':sprintId')
   public async deleteSprint(
     @Param('sprintId', new ParseUUIDPipe()) id: string,

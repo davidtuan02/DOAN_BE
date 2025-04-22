@@ -1,5 +1,6 @@
 export enum ACCESS_LEVEL {
+  REPORTER = 20,
   DEVELOPER = 30,
-  MANTEINER = 40,
+  MAINTAINER = 40,
   OWNER = 50,
 }

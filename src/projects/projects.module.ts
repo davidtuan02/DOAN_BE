@@ -27,6 +27,7 @@ import { UsersModule } from '../users/users.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { BoardColumnService } from './services/board-column.service';
 import { BoardColumnController } from './controllers/board-column.controller';
+import { ProjectMembersController } from './controllers/project-members.controller';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { BoardColumnController } from './controllers/board-column.controller';
     SprintController,
     FiltersController,
     BoardColumnController,
+    ProjectMembersController,
   ],
   exports: [
     ProjectsService,
