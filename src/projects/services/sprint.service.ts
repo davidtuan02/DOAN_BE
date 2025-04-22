@@ -116,12 +116,17 @@ export class SprintService {
   public async startSprint(id: string): Promise<SprintEntity> {
     const sprint = await this.findSprintById(id);
 
-    if (sprint.status !== SPRINT_STATUS.PLANNING) {
-      throw new Error('Only sprints in the planning state can be started');
+    // Only throw an error if the sprint is already completed
+    if (sprint.status === SPRINT_STATUS.COMPLETED) {
+      throw new Error('Completed sprints cannot be started again');
     }
 
     sprint.status = SPRINT_STATUS.ACTIVE;
-    sprint.startDate = new Date();
+
+    // Only set the start date if it's not already set
+    if (!sprint.startDate) {
+      sprint.startDate = new Date();
+    }
 
     return await this.sprintRepository.save(sprint);
   }
