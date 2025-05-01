@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -16,17 +15,7 @@ export class UserDTO {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  firstName: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  lastName: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  age: number;
+  fullName: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -53,17 +42,7 @@ export class UserUpdateDTO {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  firstName?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  lastName?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsNumber()
-  age?: number;
+  fullName?: string;
 
   @ApiProperty()
   @IsOptional()

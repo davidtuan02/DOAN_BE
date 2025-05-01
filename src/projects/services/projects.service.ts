@@ -329,7 +329,7 @@ export class ProjectsService {
       return project.usersIncludes.map((userProject) => ({
         id: userProject.id,
         userId: userProject.user.id,
-        userName: `${userProject.user.firstName} ${userProject.user.lastName}`,
+        userName: `${userProject.user.fullName}`,
         userEmail: userProject.user.email,
         accessLevel: userProject.accessLevel,
         createdAt: userProject.createdAt,
@@ -380,7 +380,7 @@ export class ProjectsService {
       return {
         id: savedMember.id,
         userId: savedMember.user.id,
-        userName: `${savedMember.user.firstName} ${savedMember.user.lastName}`,
+        userName: `${savedMember.user.fullName}`,
         userEmail: savedMember.user.email,
         accessLevel: savedMember.accessLevel,
         createdAt: savedMember.createdAt,
@@ -451,7 +451,7 @@ export class ProjectsService {
       return {
         id: updatedRelation.id,
         userId: updatedRelation.user.id,
-        userName: `${updatedRelation.user.firstName} ${updatedRelation.user.lastName}`,
+        userName: `${updatedRelation.user.fullName}`,
         userEmail: updatedRelation.user.email,
         accessLevel: updatedRelation.accessLevel,
         createdAt: updatedRelation.createdAt,
