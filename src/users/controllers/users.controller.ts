@@ -29,7 +29,27 @@ export class UsersController {
   @PublicAccess()
   @Post('create')
   public async registerUser(@Body() body: UserDTO) {
-    return await this.usersService.createUser(body);
+    try {
+      // Log the request body for debugging
+      console.log('Register request body:', body);
+      
+      // Explicitly check for required fullName
+      if (!body.fullName) {
+        throw new Error('fullName is required');
+      }
+      
+      return await this.usersService.createUser(body);
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      // Handle specific database errors more gracefully
+      if (error.message && error.message.includes('violates not-null constraint')) {
+        const errorMessage = `Missing required fields: ${error.message}`;
+        console.error(errorMessage);
+        throw new Error(errorMessage);
+      }
+      throw error;
+    }
   }
 
   @PublicAccess()

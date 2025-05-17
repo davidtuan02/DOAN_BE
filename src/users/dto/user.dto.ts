@@ -19,6 +19,10 @@ export class UserDTO {
 
   @ApiProperty()
   @IsNotEmpty()
+  age: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   email: string;
 

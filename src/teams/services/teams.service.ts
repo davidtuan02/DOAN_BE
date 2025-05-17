@@ -85,7 +85,26 @@ export class TeamsService {
   }
 
   async deleteTeam(id: string): Promise<void> {
-    const team = await this.getTeamById(id);
+    const team = await this.teamRepository.findOne({
+      where: { id },
+      relations: ['usersIncludes', 'projects'],
+    });
+    
+    if (!team) {
+      throw new NotFoundException(`Team with ID ${id} not found`);
+    }
+
+    // First, remove all user-team relationships
+    if (team.usersIncludes && team.usersIncludes.length > 0) {
+      await this.userTeamRepository.remove(team.usersIncludes);
+    }
+
+    // Check if team has projects
+    if (team.projects && team.projects.length > 0) {
+      throw new Error('Cannot delete team with associated projects. Please remove or reassign projects first.');
+    }
+
+    // Now we can safely remove the team
     await this.teamRepository.remove(team);
   }
 
