@@ -8,8 +8,10 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
 
   const users = Array.from({ length: 10 }, () => ({
-    fullName: faker.person.fullName(),
-    age: faker.number.int({ min: 18, max: 60 }),
+    // fullName: faker.person.fullName(),
+    // age: faker.number.int({ min: 18, max: 60 }),
+    fullName: faker.name.fullName(),
+    age: faker.datatype.number({ min: 18, max: 60 }),
     email: faker.internet.email(),
     username: faker.internet.userName(),
     password: 'Password123!',
