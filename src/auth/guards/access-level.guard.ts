@@ -46,7 +46,7 @@ export class AccessLevelGuard implements CanActivate {
 
     const req = context.switchToHttp().getRequest<Request>();
 
-    const { roleUser, idUser } = req;
+    const { roleUser, idUser } = req as any;
 
     if (accessLevel === undefined) {
       if (roles === undefined) {
