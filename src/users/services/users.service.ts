@@ -6,6 +6,7 @@ import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { UserDTO, UserToProjectDTO, UserUpdateDTO } from '../dto/user.dto';
 import { UsersEntity } from '../entities/user.entity';
 import { UsersProjectsEntity } from '../entities/usersProjects.entity';
+import { ROLES } from '../../constants/roles-enum';
 
 @Injectable()
 export class UsersService {
@@ -18,9 +19,55 @@ export class UsersService {
 
   public async createUser(body: UserDTO): Promise<UsersEntity> {
     try {
-      body.password = await bcrypt.hash(body.password, +process.env.HASH_SALT);
-      return await this.userRepository.save(body);
+      console.log('Starting createUser service with body:', JSON.stringify(body, null, 2));
+      
+      // Check if email or username already exists
+      console.log('Checking for existing user...');
+      const existingUser = await this.userRepository.findOne({
+        where: [
+          { email: body.email },
+          { username: body.username }
+        ]
+      });
+
+      if (existingUser) {
+        console.log('User already exists:', JSON.stringify(existingUser, null, 2));
+        throw new Error('Email or username already exists');
+      }
+
+      // Hash password with proper salt handling
+      console.log('Hashing password...');
+      const saltRounds = 10;
+      console.log('Using salt rounds:', saltRounds);
+      body.password = await bcrypt.hash(body.password, saltRounds);
+
+      // Create new user
+      console.log('Creating new user...');
+      const newUser = this.userRepository.create({
+        firstName: body.firstName,
+        lastName: body.lastName,
+        age: body.age,
+        email: body.email,
+        username: body.username,
+        password: body.password,
+        role: body.role || ROLES.BASIC
+      });
+      
+      console.log('Created user object:', JSON.stringify(newUser, null, 2));
+      const savedUser = await this.userRepository.save(newUser);
+      console.log('User saved successfully:', JSON.stringify(savedUser, null, 2));
+      return savedUser;
     } catch (error) {
+      console.error('Error in createUser service:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        code: error.code
+      });
+      
+      if (error.message === 'Email or username already exists') {
+        throw error;
+      }
       throw ErrorManager.createSignatureMessage(error.message);
     }
   }

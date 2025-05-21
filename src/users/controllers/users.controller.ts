@@ -31,24 +31,73 @@ export class UsersController {
   public async registerUser(@Body() body: UserDTO) {
     try {
       // Log the request body for debugging
-      console.log('Register request body:', body);
+      console.log('Register request body:', JSON.stringify(body, null, 2));
       
-      // Explicitly check for required fullName
-      if (!body.fullName) {
-        throw new Error('fullName is required');
+      // Validate required fields
+      if (!body.firstName) {
+        throw new Error('firstName is required');
       }
-      
-      return await this.usersService.createUser(body);
+      if (!body.email) {
+        throw new Error('email is required');
+      }
+      if (!body.username) {
+        throw new Error('username is required');
+      }
+      if (!body.password) {
+        throw new Error('password is required');
+      }
+      if (!body.age) {
+        throw new Error('age is required');
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.email)) {
+        throw new Error('Invalid email format');
+      }
+
+      // Validate password length
+      if (body.password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      // Validate age
+      if (body.age < 18) {
+        throw new Error('Age must be at least 18');
+      }
+
+      console.log('All validations passed, calling createUser service...');
+      const result = await this.usersService.createUser(body);
+      console.log('Registration successful:', JSON.stringify(result, null, 2));
+      return result;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Registration error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        code: error.code
+      });
       
-      // Handle specific database errors more gracefully
+      // Handle specific database errors
       if (error.message && error.message.includes('violates not-null constraint')) {
-        const errorMessage = `Missing required fields: ${error.message}`;
-        console.error(errorMessage);
-        throw new Error(errorMessage);
+        throw new Error(`Missing required fields: ${error.message}`);
       }
-      throw error;
+      if (error.message && error.message.includes('duplicate key')) {
+        throw new Error('Email or username already exists');
+      }
+      
+      // Handle validation errors
+      if (error.message && (
+        error.message.includes('is required') ||
+        error.message.includes('Invalid email format') ||
+        error.message.includes('Password must be') ||
+        error.message.includes('Age must be')
+      )) {
+        throw new Error(error.message);
+      }
+
+      // For any other errors
+      throw new Error(`Registration failed: ${error.message}`);
     }
   }
 

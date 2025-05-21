@@ -5,6 +5,8 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  IsNumber,
+  Min,
 } from 'class-validator';
 import { ROLES } from '../../constants/roles-enum';
 import { ProjectsEntity } from '../../projects/entities/projects.entity';
@@ -15,10 +17,17 @@ export class UserDTO {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  fullName: string;
+  firstName: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  lastName?: string;
 
   @ApiProperty()
   @IsNotEmpty()
+  @IsNumber()
+  @Min(18)
   age: number;
 
   @ApiProperty()
@@ -46,7 +55,18 @@ export class UserUpdateDTO {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  fullName?: string;
+  firstName?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNumber()
+  @Min(18)
+  age?: number;
 
   @ApiProperty()
   @IsOptional()

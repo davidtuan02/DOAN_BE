@@ -8,8 +8,14 @@ import { UsersTeamsEntity } from '../../teams/entities/usersTeams.entity';
 
 @Entity({ name: 'users' })
 export class UsersEntity extends BaseEntity implements IUser {
+  @Column({ name: 'first_name' })
+  firstName: string;
+
+  @Column({ name: 'last_name', nullable: true })
+  lastName: string;
+
   @Column()
-  fullName: string;
+  age: number;
 
   @Column({ unique: true })
   email: string;
