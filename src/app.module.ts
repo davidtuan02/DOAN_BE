@@ -10,6 +10,7 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { TeamsModule } from './teams/teams.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { GoalsModule } from './goals/goals.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { GoalsModule } from './goals/goals.module';
     TeamsModule,
     NotificationsModule,
     GoalsModule,
+    StatisticsModule,
   ],
 })
 export class AppModule {}
