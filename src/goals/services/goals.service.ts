@@ -122,7 +122,7 @@ export class GoalsService {
       projectId: goal.projectId,
       projectName: goal.project?.name || '',
       ownerId: goal.ownerId,
-      ownerName: goal.owner ? `${goal.owner.fullName}` : null,
+      ownerName: goal.owner ? `${goal.owner.firstName} ${goal.owner.lastName || ''}` : null,
       createdAt: goal.createdAt,
       updatedAt: goal.updatedAt,
     };

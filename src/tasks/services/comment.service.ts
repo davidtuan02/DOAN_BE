@@ -50,7 +50,7 @@ export class CommentService {
       try {
         // Get commenter details
         const commenter = await this.usersService.findUserById(userId);
-        const commenterName = `${commenter.fullName}`;
+        const commenterName = `${commenter.firstName} ${commenter.lastName || ''}`;
 
         // Create notification
         await this.notificationService.createNotification(

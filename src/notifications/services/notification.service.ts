@@ -57,7 +57,7 @@ export class NotificationService {
       return null;
     }
 
-    const updaterName = `${updatedBy.fullName}`;
+    const updaterName = `${updatedBy.firstName} ${updatedBy.lastName || ''}`;
     const title = `Issue đã được cập nhật`;
     let message = `${updaterName} đã cập nhật issue "${issueTitle}"`;
 
