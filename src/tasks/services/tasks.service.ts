@@ -288,8 +288,8 @@ export class TasksService {
     try {
       const task = await this.findTaskById(taskId);
 
-      // Nếu sprintId là null thì xóa task khỏi tất cả sprint
-      if (sprintId === null) {
+      // Nếu sprintId là null hoặc chuỗi rỗng thì xóa task khỏi tất cả sprint
+      if (!sprintId) {
         // Tìm tất cả sprint chứa task này
         const allSprints = await this.sprintRepository.find({
           relations: ['issues'],
@@ -347,8 +347,7 @@ export class TasksService {
       }
 
       // Thêm task vào sprint mới nếu chưa có
-      const taskExists = sprint.issues.some((issue) => issue.id === task.id);
-      if (!taskExists) {
+      if (!sprint.issues.some((issue) => issue.id === taskId)) {
         sprint.issues.push(task);
         await this.sprintRepository.save(sprint);
       }

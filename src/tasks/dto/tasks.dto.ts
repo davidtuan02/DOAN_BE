@@ -86,10 +86,10 @@ export class MoveTaskDTO {
 }
 
 export class AddToSprintDTO {
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsUUID()
-  sprintId: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  sprintId?: string | null;
 }
 
 export class CreateChildTaskDTO {
