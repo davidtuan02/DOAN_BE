@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { Exclude } from 'class-transformer';
 import { ROLES } from '../../constants/roles-enum';
 import { IUser } from '../../interfaces/user.interface';
 import { BaseEntity } from '../../config/base.entity';
@@ -18,7 +17,6 @@ export class User {
   email: string;
 
   @Column()
-  @Exclude()
   password: string;
 
   @Column()
@@ -67,7 +65,6 @@ export class UsersEntity extends BaseEntity implements IUser {
   @Column({ unique: true })
   username: string;
 
-  @Exclude()
   @Column()
   password: string;
 

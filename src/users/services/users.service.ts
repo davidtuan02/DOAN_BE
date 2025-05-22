@@ -74,7 +74,10 @@ export class UsersService {
 
   public async findUsers(): Promise<UsersEntity[]> {
     try {
-      const users: UsersEntity[] = await this.userRepository.find();
+      const users: UsersEntity[] = await this.userRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .getMany();
 
       if (users.length === 0) {
         throw new ErrorManager({
