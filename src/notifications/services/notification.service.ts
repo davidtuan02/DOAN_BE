@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -9,6 +9,8 @@ import { UsersEntity } from '../../users/entities/user.entity';
 
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name);
+
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepository: Repository<NotificationEntity>,
@@ -52,12 +54,24 @@ export class NotificationService {
     projectId: string,
     changes: string[] = [],
   ): Promise<NotificationEntity> {
+    this.logger.debug('=== Debug Notification ===');
+    this.logger.debug('updatedBy type:', typeof updatedBy);
+    this.logger.debug('updatedBy keys:', Object.keys(updatedBy));
+    this.logger.debug('updatedBy full:', JSON.stringify(updatedBy, null, 2));
+    this.logger.debug('user type:', typeof user);
+    this.logger.debug('user keys:', Object.keys(user));
+    this.logger.debug('user full:', JSON.stringify(user, null, 2));
+    this.logger.debug('issueTitle:', issueTitle);
+
     // Bỏ qua nếu người cập nhật cũng chính là người nhận thông báo
     if (user.id === updatedBy.id) {
       return null;
     }
 
-    const updaterName = `${updatedBy.firstName} ${updatedBy.lastName || ''}`;
+    // Đảm bảo luôn có tên người cập nhật
+    const updaterName = updatedBy?.username || 'Someone';
+    this.logger.debug('updaterName:', updaterName);
+    
     const title = `Issue đã được cập nhật`;
     let message = `${updaterName} đã cập nhật issue "${issueTitle}"`;
 
@@ -65,6 +79,8 @@ export class NotificationService {
     if (changes.length > 0) {
       message += `: ${changes.join(', ')}`;
     }
+    this.logger.debug('final message:', message);
+    this.logger.debug('=== End Debug ===');
 
     // Tạo link đến issue
     const link = `/projects/${projectId}/issues/${issueId}`;
@@ -73,7 +89,7 @@ export class NotificationService {
     const metadata = {
       issueId,
       projectId,
-      updatedBy: updatedBy.id,
+      updatedBy: updatedBy?.id,
       changes,
     };
 

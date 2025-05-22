@@ -171,14 +171,97 @@ export class ProjectsService {
 
   public async deleteProject(id: string): Promise<DeleteResult | undefined> {
     try {
-      const project: DeleteResult = await this.projectRepository.delete(id);
-      if (project.affected === 0) {
-        throw new ErrorManager({
-          type: 'BAD_REQUEST',
-          message: 'No se pudo borrar proyecto',
+      // Start a transaction
+      const queryRunner = this.connection.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      try {
+        // Find the project with all relations
+        const project = await this.projectRepository.findOne({
+          where: { id },
+          relations: [
+            'boards',
+            'boards.columns',
+            'boards.columns.tasks',
+            'boards.sprints',
+            'usersIncludes',
+            'usersIncludes.user',
+            'team'
+          ]
         });
+
+        if (!project) {
+          throw new ErrorManager({
+            type: 'BAD_REQUEST',
+            message: 'Project not found',
+          });
+        }
+
+        // Delete all attachments related to tasks in this project
+        await queryRunner.manager.query(
+          `DELETE FROM attachment WHERE task_id IN (SELECT id FROM task WHERE project_id = $1)`,
+          [id]
+        );
+
+        // Delete all tasks directly from the task table
+        await queryRunner.manager.query(
+          `DELETE FROM task WHERE project_id = $1`,
+          [id]
+        );
+
+        // Delete all sprints in the project's boards
+        for (const board of project.boards) {
+          if (board.sprints && board.sprints.length > 0) {
+            await queryRunner.manager.remove(board.sprints);
+          }
+        }
+
+        // Delete all board columns
+        for (const board of project.boards) {
+          if (board.columns && board.columns.length > 0) {
+            await queryRunner.manager.remove(board.columns);
+          }
+        }
+
+        // Delete all boards
+        if (project.boards && project.boards.length > 0) {
+          await queryRunner.manager.remove(project.boards);
+        }
+
+        // Delete all user-project relationships
+        if (project.usersIncludes && project.usersIncludes.length > 0) {
+          await queryRunner.manager.remove(project.usersIncludes);
+        }
+
+        // Remove team relationship
+        if (project.team) {
+          project.team = null;
+          await queryRunner.manager.save(project);
+        }
+
+        // Finally delete the project
+        const result = await queryRunner.manager.delete(ProjectsEntity, id);
+
+        // Commit the transaction
+        await queryRunner.commitTransaction();
+
+        if (result.affected === 0) {
+          throw new ErrorManager({
+            type: 'BAD_REQUEST',
+            message: 'Could not delete project',
+          });
+        }
+
+        return result;
+      } catch (error) {
+        // Rollback the transaction in case of error
+        await queryRunner.rollbackTransaction();
+        throw error;
+      } finally {
+        // Release the query runner
+        await queryRunner.release();
       }
-      return project;
     } catch (error) {
       throw ErrorManager.createSignatureMessage(error.message);
     }
