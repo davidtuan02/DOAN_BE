@@ -93,4 +93,16 @@ export class AuthController {
       body.newPassword,
     );
   }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Logout user' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiHeader({
+    name: 'tasks_token',
+  })
+  async logout(@Req() request: IRequestWithUser) {
+    return { message: 'Logout successful' };
+  }
 }
