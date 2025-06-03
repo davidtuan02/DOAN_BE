@@ -39,7 +39,7 @@ export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
   @Post()
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.MANAGER)
   async createTeam(@Body() body: CreateTeamDto, @Req() req: RequestWithUser) {
     try {
       if (!req.user || !req.user.id) {
@@ -87,7 +87,7 @@ export class TeamsController {
   }
 
   @Delete(':id')
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.MANAGER)
   deleteTeam(@Param('id') id: string) {
     return this.teamsService.deleteTeam(id);
   }

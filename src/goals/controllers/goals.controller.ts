@@ -35,7 +35,7 @@ export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}
 
   @Post()
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.MANAGER)
   @ApiOperation({ summary: 'Create a new goal' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -99,7 +99,7 @@ export class GoalsController {
   }
 
   @Patch(':id')
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.MANAGER)
   @ApiOperation({ summary: 'Update a goal' })
   @ApiParam({ name: 'id', description: 'Goal ID' })
   @ApiResponse({
@@ -131,7 +131,7 @@ export class GoalsController {
   }
 
   @Delete(':id')
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.MANAGER)
   @ApiOperation({ summary: 'Delete a goal' })
   @ApiParam({ name: 'id', description: 'Goal ID' })
   @ApiResponse({

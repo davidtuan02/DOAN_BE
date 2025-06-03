@@ -50,7 +50,7 @@ export class UsersService {
         email: body.email,
         username: body.username,
         password: body.password,
-        role: body.role || ROLES.BASIC
+        role: body.role || ROLES.MEMBER
       });
       
       console.log('Created user object:', JSON.stringify(newUser, null, 2));

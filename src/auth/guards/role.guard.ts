@@ -41,7 +41,11 @@ export class RolesGuard implements CanActivate {
     const { roleUser } = req as any;
 
     // If user has ADMIN role, they always have access
-    if (roleUser === ROLES.ADMIN) {
+    if (roleUser === ROLES.MANAGER) {
+      return true;
+    }
+
+    if (roleUser === ROLES.MANAGER) {
       return true;
     }
 

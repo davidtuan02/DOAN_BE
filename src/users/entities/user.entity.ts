@@ -28,7 +28,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: ROLES,
-    default: ROLES.BASIC
+    default: ROLES.MEMBER
   })
   role: ROLES;
 
@@ -68,7 +68,7 @@ export class UsersEntity extends BaseEntity implements IUser {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: ROLES, default: ROLES.BASIC })
+  @Column({ type: 'enum', enum: ROLES, default: ROLES.MEMBER })
   role: ROLES;
 
   @Column({ nullable: true })

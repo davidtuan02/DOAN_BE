@@ -38,7 +38,7 @@ export class TeamRoleGuard implements CanActivate {
     const teamId = req.params.teamId;
 
     // If user has ADMIN role globally, they always have access
-    if (roleUser === ROLES.ADMIN) {
+    if (roleUser === ROLES.MANAGER) {
       return true;
     }
 
@@ -86,6 +86,13 @@ export class TeamRoleGuard implements CanActivate {
         );
       }
       return true;
+    }
+
+    if (roleUser === ROLES.MANAGER) {
+      // Manager role can perform team admin actions
+      if (requiredTeamRole === TEAM_ROLE.ADMIN) {
+        return true;
+      }
     }
 
     throw new UnauthorizedException('Invalid team role');

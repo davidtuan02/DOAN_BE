@@ -35,7 +35,7 @@ export class ProjectsController {
   @ApiHeader({
     name: 'tasks_token',
   })
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.MANAGER)
   @Post('create/userOwner/:userId')
   public async createProject(
     @Body() body: ProjectDTO,

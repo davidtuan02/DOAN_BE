@@ -63,8 +63,12 @@ export class AccessLevelGuard implements CanActivate {
     }
 
     // ADMIN users have full access to everything
-    if (roleUser === ROLES.ADMIN) {
+    if (roleUser === ROLES.MANAGER) {
       return true;
+    }
+
+    if (roleUser === ROLES.MANAGER) {
+      // ... existing code ...
     }
 
     const user = await this.userService.findUserById(idUser);

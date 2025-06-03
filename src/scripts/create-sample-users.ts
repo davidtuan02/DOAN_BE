@@ -14,7 +14,7 @@ async function bootstrap() {
     email: faker.internet.email(),
     username: faker.internet.userName(),
     password: 'Password123!',
-    role: ROLES.BASIC,
+    role: ROLES.MEMBER,
   }));
 
   console.log('Creating sample users...');
