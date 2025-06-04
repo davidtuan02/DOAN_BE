@@ -40,6 +40,7 @@ export class ProjectMemberResponse {
   userName: string;
   userEmail: string;
   accessLevel: ACCESS_LEVEL;
+  role: string;
   createdAt: Date;
   updatedAt: Date;
 }

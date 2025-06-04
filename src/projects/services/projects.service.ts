@@ -415,6 +415,7 @@ export class ProjectsService {
         userName: `${userProject.user.firstName} ${userProject.user.lastName || ''}`,
         userEmail: userProject.user.email,
         accessLevel: userProject.accessLevel,
+        role: userProject.user.role,
         createdAt: userProject.createdAt,
         updatedAt: userProject.updatedAt,
       }));
@@ -466,6 +467,7 @@ export class ProjectsService {
         userName: `${savedMember.user.firstName} ${savedMember.user.lastName || ''}`,
         userEmail: savedMember.user.email,
         accessLevel: savedMember.accessLevel,
+        role: savedMember.user.role,
         createdAt: savedMember.createdAt,
         updatedAt: savedMember.updatedAt,
       };
@@ -537,6 +539,7 @@ export class ProjectsService {
         userName: `${updatedRelation.user.firstName} ${updatedRelation.user.lastName || ''}`,
         userEmail: updatedRelation.user.email,
         accessLevel: updatedRelation.accessLevel,
+        role: updatedRelation.user.role,
         createdAt: updatedRelation.createdAt,
         updatedAt: updatedRelation.updatedAt,
       };
