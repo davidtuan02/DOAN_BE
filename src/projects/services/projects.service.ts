@@ -412,7 +412,7 @@ export class ProjectsService {
       return project.usersIncludes.map((userProject) => ({
         id: userProject.id,
         userId: userProject.user.id,
-        userName: `${userProject.user.firstName} ${userProject.user.lastName || ''}`,
+        userName: `${userProject.user.firstName || ''}`,
         userEmail: userProject.user.email,
         accessLevel: userProject.accessLevel,
         role: userProject.user.role,
