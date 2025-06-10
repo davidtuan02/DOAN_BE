@@ -9,6 +9,7 @@ import {
 import { BaseEntity } from '../../config/base.entity';
 import { BoardEntity } from './board.entity';
 import { TasksEntity } from '../../tasks/entities/tasks.entity';
+import { ProjectsEntity } from './projects.entity';
 import { SPRINT_STATUS } from '../../constants/sprint-status.enum';
 
 @Entity({ name: 'sprints' })
@@ -35,6 +36,10 @@ export class SprintEntity extends BaseEntity {
   @ManyToOne(() => BoardEntity, (board) => board.sprints)
   @JoinColumn({ name: 'board_id' })
   board: BoardEntity;
+
+  @ManyToOne(() => ProjectsEntity, (project) => project.sprints)
+  @JoinColumn({ name: 'project_id' })
+  project: ProjectsEntity;
 
   @ManyToMany(() => TasksEntity)
   @JoinTable({

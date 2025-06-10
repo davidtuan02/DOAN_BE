@@ -1,0 +1,126 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class AddProjectIdToSprints1749567000592 implements MigrationInterface {
+    name = 'AddProjectIdToSprints1749567000592'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "sprints" DROP CONSTRAINT "FK_12a81f920cc034f4c532766bf18"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP CONSTRAINT "FK_c050c5f2e8cad28ad9820a467e9"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP CONSTRAINT "FK_ce17f8b1c8016554cafa2dc8fb5"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "created_at"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "updated_at"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "status"`);
+        await queryRunner.query(`DROP TYPE "public"."sprints_status_enum"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "board_id"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "total_story_points"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "projectId"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "description"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "project_id"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "goal"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "project_type"`);
+        await queryRunner.query(`DROP TYPE "public"."projects_project_type_enum"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "team_id"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP CONSTRAINT "UQ_63e67599567b2126cfef14e1474"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "key"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "is_active"`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "age"`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "reset_token_expiry"`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "reset_token"`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "is_active"`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "is_active" boolean NOT NULL DEFAULT true`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "description" character varying`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "status" "public"."sprints_status_enum" NOT NULL DEFAULT 'PLANNING'`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "project_id" character varying NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "total_story_points" integer NOT NULL DEFAULT '0'`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "created_at" TIMESTAMP NOT NULL DEFAULT now()`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "updated_at" TIMESTAMP NOT NULL DEFAULT now()`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "projectId" uuid`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "goal" character varying`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "board_id" uuid`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "key" character varying(10) NOT NULL DEFAULT substring(md5(random()::text), 1, 10)`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD CONSTRAINT "UQ_63e67599567b2126cfef14e1474" UNIQUE ("key")`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "project_type" "public"."projects_project_type_enum" NOT NULL DEFAULT 'scrum'`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "team_id" uuid`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "is_active" boolean NOT NULL DEFAULT true`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "age" integer`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "reset_token" character varying`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "reset_token_expiry" TIMESTAMP`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "start_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "start_date" date NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "end_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "end_date" date NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "start_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "start_date" TIMESTAMP`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "end_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "end_date" TIMESTAMP`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "project_id"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "project_id" uuid`);
+        await queryRunner.query(`ALTER TABLE "projects" ALTER COLUMN "description" SET NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "last_name" SET NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD CONSTRAINT "FK_12a81f920cc034f4c532766bf18" FOREIGN KEY ("projectId") REFERENCES "projects"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD CONSTRAINT "FK_c050c5f2e8cad28ad9820a467e9" FOREIGN KEY ("board_id") REFERENCES "boards"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD CONSTRAINT "FK_82145010051f3f2fc94671c0b35" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD CONSTRAINT "FK_ce17f8b1c8016554cafa2dc8fb5" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "projects" DROP CONSTRAINT "FK_ce17f8b1c8016554cafa2dc8fb5"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP CONSTRAINT "FK_82145010051f3f2fc94671c0b35"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP CONSTRAINT "FK_c050c5f2e8cad28ad9820a467e9"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP CONSTRAINT "FK_12a81f920cc034f4c532766bf18"`);
+        await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "last_name" DROP NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "projects" ALTER COLUMN "description" DROP NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "project_id"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "project_id" character varying NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "end_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "end_date" date NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "start_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "start_date" date NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "end_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "end_date" TIMESTAMP NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "start_date"`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "start_date" TIMESTAMP NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "reset_token_expiry"`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "reset_token"`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "age"`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "is_active"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "team_id"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "project_type"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP CONSTRAINT "UQ_63e67599567b2126cfef14e1474"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "key"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "board_id"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "goal"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "projectId"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "updated_at"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "created_at"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "total_story_points"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "project_id"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "status"`);
+        await queryRunner.query(`ALTER TABLE "sprints" DROP COLUMN "description"`);
+        await queryRunner.query(`ALTER TABLE "projects" DROP COLUMN "is_active"`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "is_active" boolean NOT NULL DEFAULT true`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "reset_token" character varying`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "reset_token_expiry" TIMESTAMP`);
+        await queryRunner.query(`ALTER TABLE "users" ADD "age" integer`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "is_active" boolean NOT NULL DEFAULT true`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "key" character varying(10) NOT NULL DEFAULT "substring"(md5((random())), 1, 10)`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD CONSTRAINT "UQ_63e67599567b2126cfef14e1474" UNIQUE ("key")`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "team_id" uuid`);
+        await queryRunner.query(`CREATE TYPE "public"."projects_project_type_enum" AS ENUM('scrum', 'kanban')`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD "project_type" "public"."projects_project_type_enum" NOT NULL DEFAULT 'scrum'`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "goal" character varying`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "project_id" character varying NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "description" character varying`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "projectId" uuid`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "total_story_points" integer NOT NULL DEFAULT '0'`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "board_id" uuid`);
+        await queryRunner.query(`CREATE TYPE "public"."sprints_status_enum" AS ENUM('PLANNING', 'ACTIVE', 'COMPLETED')`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "status" "public"."sprints_status_enum" NOT NULL DEFAULT 'PLANNING'`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "updated_at" TIMESTAMP NOT NULL DEFAULT now()`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "created_at" TIMESTAMP NOT NULL DEFAULT now()`);
+        await queryRunner.query(`ALTER TABLE "projects" ADD CONSTRAINT "FK_ce17f8b1c8016554cafa2dc8fb5" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD CONSTRAINT "FK_c050c5f2e8cad28ad9820a467e9" FOREIGN KEY ("board_id") REFERENCES "boards"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD CONSTRAINT "FK_12a81f920cc034f4c532766bf18" FOREIGN KEY ("projectId") REFERENCES "projects"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+    }
+
+}

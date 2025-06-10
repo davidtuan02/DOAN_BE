@@ -5,10 +5,18 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 import { SPRINT_STATUS } from '../../constants/sprint-status.enum';
 
 export class CreateSprintDto {
+  @ApiProperty({
+    description: 'Project ID',
+  })
+  @IsNotEmpty()
+  @IsUUID()
+  project_id: string;
+
   @ApiProperty({
     description: 'Sprint name',
   })

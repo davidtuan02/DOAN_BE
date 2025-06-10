@@ -24,15 +24,29 @@ export class SprintService {
   ): Promise<SprintEntity> {
     const board = await this.boardRepository.findOne({
       where: { id: boardId },
+      relations: ['project'],
     });
 
     if (!board) {
       throw new NotFoundException(`Board with ID ${boardId} not found`);
     }
 
+    const project = await this.projectRepository.findOne({
+      where: { id: body.project_id },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${body.project_id} not found`);
+    }
+
     const newSprint = this.sprintRepository.create({
-      ...body,
+      name: body.name,
+      goal: body.goal,
+      status: body.status || SPRINT_STATUS.PLANNING,
+      startDate: body.startDate,
+      endDate: body.endDate,
       board,
+      project,
     });
 
     return await this.sprintRepository.save(newSprint);

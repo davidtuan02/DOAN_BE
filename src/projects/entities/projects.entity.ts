@@ -8,6 +8,7 @@ import { TeamsEntity } from '../../teams/entities/teams.entity';
 import { BoardEntity } from './board.entity';
 import { CustomColumnEntity } from './custom-column.entity';
 import { CustomFilterEntity } from './custom-filter.entity';
+import { SprintEntity } from './sprint.entity';
 
 @Entity({ name: 'projects' })
 export class ProjectsEntity extends BaseEntity implements IProject {
@@ -42,6 +43,9 @@ export class ProjectsEntity extends BaseEntity implements IProject {
 
   @OneToMany(() => BoardEntity, (board) => board.project)
   boards: BoardEntity[];
+
+  @OneToMany(() => SprintEntity, (sprint) => sprint.project)
+  sprints: SprintEntity[];
 
   @OneToMany(() => CustomColumnEntity, (column) => column.project)
   customColumns: CustomColumnEntity[];
