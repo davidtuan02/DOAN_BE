@@ -56,7 +56,7 @@ export class UsersEntity extends BaseEntity implements IUser {
   @Column({ name: 'last_name', nullable: true })
   lastName: string;
 
-  @Column()
+  @Column({ nullable: true })
   age: number;
 
   @Column({ unique: true })

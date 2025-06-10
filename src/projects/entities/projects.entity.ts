@@ -17,7 +17,7 @@ export class ProjectsEntity extends BaseEntity implements IProject {
   @Column()
   description: string;
 
-  @Column({ unique: true, length: 10 })
+  @Column({ unique: true, length: 10, default: () => "substring(md5(random()::text), 1, 10)" })
   key: string;
 
   @Column({
