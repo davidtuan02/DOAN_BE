@@ -29,8 +29,8 @@ export class Init1748961926734 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "sprints" ADD "created_at" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "sprints" ADD "updated_at" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "sprints" ADD "goal" character varying`);
-        await queryRunner.query(`CREATE TYPE "public"."sprints_status_enum" AS ENUM('PLANNING', 'ACTIVE', 'COMPLETED')`);
-        await queryRunner.query(`ALTER TABLE "sprints" ADD "status" "public"."sprints_status_enum" NOT NULL DEFAULT 'PLANNING'`);
+        await queryRunner.query(`CREATE TYPE "public"."sprints_status_enum" AS ENUM('planning', 'active', 'completed')`);
+        await queryRunner.query(`ALTER TABLE "sprints" ADD "status" "public"."sprints_status_enum" NOT NULL DEFAULT 'planning'`);
         await queryRunner.query(`ALTER TABLE "sprints" ADD "board_id" uuid`);
         await queryRunner.query(`ALTER TABLE "projects" ADD "key" character varying(10) NOT NULL`);
         await queryRunner.query(`ALTER TABLE "projects" ADD CONSTRAINT "UQ_63e67599567b2126cfef14e1474" UNIQUE ("key")`);

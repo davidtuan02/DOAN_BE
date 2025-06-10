@@ -145,7 +145,7 @@ export class StatisticsService {
       const allSprints = project.boards.flatMap(board => board.sprints || []);
       
       // Find the latest active sprint
-      sprint = allSprints.find(s => s.status === 'active') || allSprints[0];
+      sprint = allSprints.find(s => s.status === 'ACTIVE') || allSprints[0];
       
       if (!sprint) {
         return {
@@ -261,7 +261,7 @@ export class StatisticsService {
       const allSprints = project.boards.flatMap(board => board.sprints || []);
       
       // Find the latest active sprint
-      sprint = allSprints.find(s => s.status === 'active') || allSprints[0];
+      sprint = allSprints.find(s => s.status === 'ACTIVE') || allSprints[0];
       
       if (!sprint) {
         return {
