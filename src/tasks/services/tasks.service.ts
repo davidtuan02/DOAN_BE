@@ -17,6 +17,7 @@ import { UsersEntity } from '../../users/entities/user.entity';
 import { NotificationService } from '../../notifications/services/notification.service';
 import { NotificationType } from '../../notifications/entities/notification.entity';
 import { AttachmentEntity } from '../entities/attachment.entity';
+import { STATUS_TASK } from '../../constants/status-task';
 
 @Injectable()
 export class TasksService {
@@ -148,6 +149,11 @@ export class TasksService {
   ): Promise<TasksEntity> {
     try {
       const task = await this.findTaskById(id);
+
+      // Convert TODO status to CREATED
+      if (body.status === 'TODO' as any) {
+        body.status = STATUS_TASK.CREATED;
+      }
 
       // Xác định những trường đã thay đổi để thêm vào thông báo
       const changes: string[] = [];
