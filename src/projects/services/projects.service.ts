@@ -17,6 +17,7 @@ import {
   ProjectMemberResponse,
   UpdateProjectMemberDTO,
 } from '../dto/project-member.dto';
+import { STATUS_TASK } from '../../constants/status-task';
 
 @Injectable()
 export class ProjectsService {
@@ -303,25 +304,57 @@ export class ProjectsService {
 
   public async findProjectsByUserId(userId: string): Promise<ProjectsEntity[]> {
     try {
-      // Vérifier si l'utilisateur existe
       await this.usersService.findUserById(userId);
 
-      // Rechercher tous les projets associés à cet utilisateur via la relation usersProjects
       const userProjects = await this.userProjectRepository.find({
         where: { user: { id: userId } },
         relations: [
           'project',
           'project.usersIncludes',
           'project.usersIncludes.user',
+          'project.tasks',
         ],
       });
 
       if (userProjects.length === 0) {
-        return []; // Retourner un tableau vide si aucun projet trouvé
+        return [];
       }
 
-      // Extraire les projets de la relation
-      const projects = userProjects.map((userProject) => userProject.project);
+      const projects = userProjects.map((userProject) => {
+        const project = userProject.project;
+        const tasks = project.tasks || [];
+        
+        // Log để kiểm tra
+        console.log('Project:', project.name);
+        console.log('All tasks:', tasks.map(t => ({
+          id: t.id,
+          name: t.taskName,
+          status: t.status
+        })));
+        
+        const openTasks = tasks.filter(task => task.status !== STATUS_TASK.DONE);
+        const doneTasks = tasks.filter(task => task.status === STATUS_TASK.DONE);
+
+        // Log kết quả filter
+        console.log('Open tasks:', openTasks.map(t => ({
+          id: t.id,
+          name: t.taskName,
+          status: t.status
+        })));
+        console.log('Done tasks:', doneTasks.map(t => ({
+          id: t.id,
+          name: t.taskName,
+          status: t.status
+        })));
+
+        return {
+          ...project,
+          issueCount: {
+            open: openTasks.length,
+            done: doneTasks.length
+          }
+        };
+      });
 
       return projects;
     } catch (error) {
