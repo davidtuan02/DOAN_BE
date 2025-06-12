@@ -2,18 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { ProjectsEntity } from '../../projects/entities/projects.entity';
-import { TasksEntity } from '../../tasks/entities/tasks.entity';
+import { TasksEntity, TaskStatus } from '../../tasks/entities/tasks.entity';
 import { UsersEntity } from '../../users/entities/user.entity';
 import { SprintEntity } from '../../projects/entities/sprint.entity';
 
 // Define enums based on database schema
-enum STATUS_TASK {
-  CREATED = 'CREATED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  REVIEW = 'REVIEW',
-  DONE = 'DONE'
-}
-
 enum PRIORITY_TASK {
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
@@ -57,8 +50,8 @@ export class StatisticsService {
     return {
       projectName: project.name,
       totalTasks: tasks.length,
-      completedTasks: tasks.filter(task => task.status === STATUS_TASK.DONE).length,
-      inProgressTasks: tasks.filter(task => task.status === STATUS_TASK.IN_PROGRESS).length,
+      completedTasks: tasks.filter(task => task.status === TaskStatus.DONE).length,
+      inProgressTasks: tasks.filter(task => task.status === TaskStatus.IN_PROGRESS).length,
       totalUsers: uniqueUsers,
       averageTaskCompletionTime: this.calculateAverageCompletionTime(tasks),
       projectProgress: this.calculateProjectProgress(tasks),
@@ -80,10 +73,10 @@ export class StatisticsService {
     return {
       total: tasks.length,
       statusDistribution: {
-        CREATED: tasks.filter(task => task.status === STATUS_TASK.CREATED).length,
-        IN_PROGRESS: tasks.filter(task => task.status === STATUS_TASK.IN_PROGRESS).length,
-        REVIEW: tasks.filter(task => task.status === STATUS_TASK.REVIEW).length,
-        DONE: tasks.filter(task => task.status === STATUS_TASK.DONE).length,
+        CREATED: tasks.filter(task => task.status === TaskStatus.CREATED).length,
+        IN_PROGRESS: tasks.filter(task => task.status === TaskStatus.IN_PROGRESS).length,
+        REVIEW: tasks.filter(task => task.status === TaskStatus.REVIEW).length,
+        DONE: tasks.filter(task => task.status === TaskStatus.DONE).length,
       },
       priorityDistribution: {
         HIGH: tasks.filter(task => task.priority === PRIORITY_TASK.HIGH).length,
@@ -114,7 +107,7 @@ export class StatisticsService {
 
     return users.map(user => {
       const userTasks = tasks.filter(task => task.assignee?.id === user.id);
-      const completedTasks = userTasks.filter(task => task.status === STATUS_TASK.DONE);
+      const completedTasks = userTasks.filter(task => task.status === TaskStatus.DONE);
 
       return {
         userId: user.id,
@@ -180,23 +173,23 @@ export class StatisticsService {
     const tasks = sprint.issues || [];
     const totalStoryPoints = tasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
     const completedStoryPoints = tasks
-      .filter(task => task.status === STATUS_TASK.DONE)
+      .filter(task => task.status === TaskStatus.DONE)
       .reduce((sum, task) => sum + (task.storyPoints || 0), 0);
 
     return {
       sprintId: sprint.id,
       sprintName: sprint.name,
       totalTasks: tasks.length,
-      completedTasks: tasks.filter(task => task.status === STATUS_TASK.DONE).length,
+      completedTasks: tasks.filter(task => task.status === TaskStatus.DONE).length,
       totalStoryPoints,
       completedStoryPoints,
       progress: totalStoryPoints > 0 ? (completedStoryPoints / totalStoryPoints) * 100 : 0,
       remainingStoryPoints: totalStoryPoints - completedStoryPoints,
       tasksByStatus: {
-        CREATED: tasks.filter(task => task.status === STATUS_TASK.CREATED).length,
-        IN_PROGRESS: tasks.filter(task => task.status === STATUS_TASK.IN_PROGRESS).length,
-        REVIEW: tasks.filter(task => task.status === STATUS_TASK.REVIEW).length,
-        DONE: tasks.filter(task => task.status === STATUS_TASK.DONE).length,
+        CREATED: tasks.filter(task => task.status === TaskStatus.CREATED).length,
+        IN_PROGRESS: tasks.filter(task => task.status === TaskStatus.IN_PROGRESS).length,
+        REVIEW: tasks.filter(task => task.status === TaskStatus.REVIEW).length,
+        DONE: tasks.filter(task => task.status === TaskStatus.DONE).length,
       }
     };
   }
@@ -310,7 +303,7 @@ export class StatisticsService {
 
     while (currentDate <= sprintEndDate) {
       const completedTasks = tasks.filter(task => 
-        task.status === STATUS_TASK.DONE && 
+        task.status === TaskStatus.DONE && 
         task.updatedAt <= currentDate
       );
 
@@ -430,7 +423,7 @@ export class StatisticsService {
 
   // Helper methods
   private calculateAverageCompletionTime(tasks: TasksEntity[]): number {
-    const completedTasks = tasks.filter(task => task.status === STATUS_TASK.DONE);
+    const completedTasks = tasks.filter(task => task.status === TaskStatus.DONE);
     if (completedTasks.length === 0) return 0;
 
     const totalTime = completedTasks.reduce((sum, task) => {
@@ -444,7 +437,7 @@ export class StatisticsService {
 
   private calculateProjectProgress(tasks: TasksEntity[]): number {
     if (tasks.length === 0) return 0;
-    return (tasks.filter(task => task.status === STATUS_TASK.DONE).length / tasks.length) * 100;
+    return (tasks.filter(task => task.status === TaskStatus.DONE).length / tasks.length) * 100;
   }
 
   private calculateUserAverageCompletionTime(tasks: TasksEntity[]): number {

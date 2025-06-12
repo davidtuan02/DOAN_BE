@@ -17,7 +17,7 @@ import {
   ProjectMemberResponse,
   UpdateProjectMemberDTO,
 } from '../dto/project-member.dto';
-import { STATUS_TASK } from '../../constants/status-task';
+import { TaskStatus } from '../../tasks/entities/tasks.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -332,8 +332,8 @@ export class ProjectsService {
           status: t.status
         })));
         
-        const openTasks = tasks.filter(task => task.status !== STATUS_TASK.DONE);
-        const doneTasks = tasks.filter(task => task.status === STATUS_TASK.DONE);
+        const openTasks = tasks.filter(task => task.status !== TaskStatus.DONE);
+        const doneTasks = tasks.filter(task => task.status === TaskStatus.DONE);
 
         // Log kết quả filter
         console.log('Open tasks:', openTasks.map(t => ({

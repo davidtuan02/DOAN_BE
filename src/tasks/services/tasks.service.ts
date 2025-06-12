@@ -9,7 +9,7 @@ import { ProjectsService } from '../../projects/services/projects.service';
 import { ErrorManager } from '../../utils/error-manager.util';
 import { DeleteResult, Repository, UpdateResult, Not } from 'typeorm';
 import { CreateChildTaskDTO, TasksDTO, UpdateTaskDTO } from '../dto/tasks.dto';
-import { TasksEntity } from '../entities/tasks.entity';
+import { TasksEntity, TaskStatus } from '../entities/tasks.entity';
 import { UsersService } from '../../users/services/users.service';
 import { BoardColumnEntity } from '../../projects/entities/board-column.entity';
 import { SprintEntity } from '../../projects/entities/sprint.entity';
@@ -17,7 +17,6 @@ import { UsersEntity } from '../../users/entities/user.entity';
 import { NotificationService } from '../../notifications/services/notification.service';
 import { NotificationType } from '../../notifications/entities/notification.entity';
 import { AttachmentEntity } from '../entities/attachment.entity';
-import { STATUS_TASK } from '../../constants/status-task';
 
 @Injectable()
 export class TasksService {
@@ -80,6 +79,11 @@ export class TasksService {
         reporter,
         parentTask,
       };
+
+      // Convert TODO status to CREATED
+      if (taskData.status === 'TODO' as any) {
+        taskData.status = TaskStatus.CREATED;
+      }
 
       return await this.taskRepository.save(taskData);
     } catch (error) {
@@ -152,7 +156,7 @@ export class TasksService {
 
       // Convert TODO status to CREATED
       if (body.status === 'TODO' as any) {
-        body.status = STATUS_TASK.CREATED;
+        body.status = TaskStatus.CREATED;
       }
 
       // Xác định những trường đã thay đổi để thêm vào thông báo

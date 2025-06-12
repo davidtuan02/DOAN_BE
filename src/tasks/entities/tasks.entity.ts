@@ -1,10 +1,17 @@
-import { STATUS_TASK } from '../../constants/status-task';
 import { ProjectsEntity } from '../../projects/entities/projects.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../config/base.entity';
 import { BoardColumnEntity } from '../../projects/entities/board-column.entity';
 import { UsersEntity } from '../../users/entities/user.entity';
 import { AttachmentEntity } from './attachment.entity';
+
+export enum TaskStatus {
+  TODO = 'TODO',
+  CREATED = 'CREATED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  REVIEW = 'REVIEW',
+  DONE = 'DONE'
+}
 
 @Entity({ name: 'task' })
 export class TasksEntity extends BaseEntity {
@@ -14,8 +21,12 @@ export class TasksEntity extends BaseEntity {
   @Column()
   taskDescription: string;
 
-  @Column({ type: 'enum', enum: STATUS_TASK })
-  status: STATUS_TASK;
+  @Column({ 
+    type: 'enum', 
+    enum: TaskStatus,
+    default: TaskStatus.TODO
+  })
+  status: TaskStatus;
 
   @ManyToOne(() => UsersEntity, { nullable: true })
   @JoinColumn({

@@ -9,9 +9,9 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { STATUS_TASK } from '../../constants/status-task';
 import { ProjectDTO } from '../../projects/dto/project.dto';
 import { Type } from 'class-transformer';
+import { TaskStatus } from '../entities/tasks.entity';
 
 export class TasksDTO {
   @ApiProperty()
@@ -26,8 +26,8 @@ export class TasksDTO {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsEnum(STATUS_TASK)
-  status: STATUS_TASK;
+  @IsEnum(TaskStatus)
+  status: TaskStatus;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -105,8 +105,8 @@ export class CreateChildTaskDTO {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsEnum(STATUS_TASK)
-  status: STATUS_TASK;
+  @IsEnum(TaskStatus)
+  status: TaskStatus;
 
   @ApiProperty()
   @IsNotEmpty()
