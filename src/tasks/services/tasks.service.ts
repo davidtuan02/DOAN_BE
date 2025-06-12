@@ -16,6 +16,7 @@ import { SprintEntity } from '../../projects/entities/sprint.entity';
 import { UsersEntity } from '../../users/entities/user.entity';
 import { NotificationService } from '../../notifications/services/notification.service';
 import { NotificationType } from '../../notifications/entities/notification.entity';
+import { AttachmentEntity } from '../entities/attachment.entity';
 
 @Injectable()
 export class TasksService {
@@ -26,6 +27,8 @@ export class TasksService {
     private readonly boardColumnRepository: Repository<BoardColumnEntity>,
     @InjectRepository(SprintEntity)
     private readonly sprintRepository: Repository<SprintEntity>,
+    @InjectRepository(AttachmentEntity)
+    private readonly attachmentRepository: Repository<AttachmentEntity>,
     private readonly projectService: ProjectsService,
     private readonly usersService: UsersService,
     @Inject(forwardRef(() => NotificationService))
@@ -217,6 +220,18 @@ export class TasksService {
   public async deleteTask(id: string): Promise<DeleteResult> {
     try {
       const task = await this.findTaskById(id);
+      
+      // Delete all attachments related to this task
+      await this.attachmentRepository.delete({ task: { id: task.id } });
+
+      // Delete all child tasks first
+      if (task.childTasks && task.childTasks.length > 0) {
+        for (const childTask of task.childTasks) {
+          // Recursively delete child tasks
+          await this.deleteTask(childTask.id);
+        }
+      }
+
       const deletedTask = await this.taskRepository.delete(id);
       if (deletedTask.affected === 0) {
         throw new ErrorManager({
